@@ -28,7 +28,7 @@ static int WaitForHwmon(void) {
     for (const char** format = hwmon_file_names; *format; ++format) {
       for (int i = 0; i < 10; i++) {
         snprintf(filename, sizeof(filename), *format, i);
-        if (! slurp_file(content, sizeof(content), filename).ok)
+        if (! File_Read(content, sizeof(content), filename).ok)
           continue;
 
         // trim the newline
@@ -48,7 +48,7 @@ static int WaitForHwmon(void) {
 }
 
 static int GetModelName(void) {
-  printf("%s\n", DMI_Get_Model_Name());
+  printf("%s\n", DMI_GetModelName());
   return NBFC_EXIT_SUCCESS;
 }
 
@@ -104,6 +104,6 @@ static int CompleteSensors(void) {
   return NBFC_EXIT_SUCCESS;
 }
 
-static int FAQ() {
+static int FAQ(void) {
   return execlp("man", "man", "nbfc.faq", NULL);
 }

@@ -15,7 +15,7 @@
 #include <stdlib.h> // exit
 #include <string.h> // strcmp
 
-static void test_AcpiCall_Parse_Path(
+static void test_AcpiCall_ParsePath(
   int line,
   const char* path,
   struct AcpiCall_Path expected
@@ -23,19 +23,19 @@ static void test_AcpiCall_Parse_Path(
   Error e;
   struct AcpiCall_Path result;
 
-  e = AcpiCall_Parse_Path(path, &result);
+  e = AcpiCall_ParsePath(path, &result);
   if (e) {
     printf("%d: %s\n", line, err_print_all(e));
     exit(1);
   }
 
-  if (! AcpiCall_Path_Equals(&result, &expected)) {
+  if (! AcpiCall_PathEquals(&result, &expected)) {
     printf("%d: Failed\n", line);
     exit(1);
   }
 }
 
-static void test_AcpiCall_Parse_Path_Error(
+static void test_AcpiCall_ParsePath_Error(
   int line,
   const char* path,
   const char* expected_error
@@ -43,7 +43,7 @@ static void test_AcpiCall_Parse_Path_Error(
   Error e;
   struct AcpiCall_Path path_array;
 
-  e = AcpiCall_Parse_Path(path, &path_array);
+  e = AcpiCall_ParsePath(path, &path_array);
   if (! e) {
     printf("%d: Expected error\n", line);
     exit(1);
@@ -100,7 +100,7 @@ static void test_AcpiCall_GetInt_Error(
 }
 
 int main(int argc, const char* argv[]) {
-#define T(PATH, ...) test_AcpiCall_Parse_Path(__LINE__, PATH, (struct AcpiCall_Path) __VA_ARGS__)
+#define T(PATH, ...) test_AcpiCall_ParsePath(__LINE__, PATH, (struct AcpiCall_Path) __VA_ARGS__)
   T("1",                               {1, 1});
   T(" 1",                              {1, 1});
   T("1 ",                              {1, 1});
@@ -109,7 +109,7 @@ int main(int argc, const char* argv[]) {
   T("1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6", {16, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6});
 #undef T
 
-#define T(...) test_AcpiCall_Parse_Path_Error(__LINE__, __VA_ARGS__)
+#define T(...) test_AcpiCall_ParsePath_Error(__LINE__, __VA_ARGS__)
   T("",                                  "Empty path");
   T("1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7", "Path too long");
   T("777777",                            "Path: 777777: Number too large");

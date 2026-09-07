@@ -24,7 +24,7 @@ struct {
   float                  watch;
 } Status_Options = {0};
 
-static void Status_Print_Fan(const FanInfo* fan) {
+static void Status_PrintFan(const FanInfo* fan) {
   printf(
     "Fan Display Name         : %s\n"
     "Temperature              : %.2f\n"
@@ -42,7 +42,7 @@ static void Status_Print_Fan(const FanInfo* fan) {
     fan->SpeedSteps);
 }
 
-static void Status_Print_Service(const ServiceInfo* service_info) {
+static void Status_PrintService(const ServiceInfo* service_info) {
   printf(
     "Read-only                : %s\n"
     "Selected Config Name     : %s\n",
@@ -58,12 +58,12 @@ static void Status_Print(void) {
   e_die();
 
   if (Status_Options.all || Status_Options.service)
-    Status_Print_Service(&service_info);
+    Status_PrintService(&service_info);
 
   if (Status_Options.all) {
     for_each_array(const FanInfo*, f, service_info.Fans) {
       printf("\n");
-      Status_Print_Fan(f);
+      Status_PrintFan(f);
     }
   }
   else if (Status_Options.fans.size) {
@@ -75,7 +75,7 @@ static void Status_Print(void) {
       }
 
       printf("\n");
-      Status_Print_Fan(&service_info.Fans.data[*fan_index]);
+      Status_PrintFan(&service_info.Fans.data[*fan_index]);
     }
   }
 }

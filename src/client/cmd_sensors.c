@@ -76,7 +76,7 @@ static Error Sensors_IsValidSensor(const char* sensor) {
       return err_stringf("No such sensor group: %s", sensor);
 
     case '/':
-      if (file_exists(sensor))
+      if (File_Exists(sensor))
         return err_success();
 
       errno = ENOENT;
@@ -176,7 +176,7 @@ static int Sensors_Show(void) {
     const char*              TemperatureAlgorithmType_Source;
   };
 
-  struct FanWithTrace *fans = Mem_Calloc(model_config.FanConfigurations.size, sizeof(struct FanWithTrace));
+  struct FanWithTrace* fans = Mem_Calloc(model_config.FanConfigurations.size, sizeof(struct FanWithTrace));
 
   // ==========================================================================
   // Set the defaults

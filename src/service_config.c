@@ -84,7 +84,7 @@ err:
 
 Error ServiceConfig_Write(const char* file) {
   nx_json root = {0};
-  nx_json *o = create_json_object(NULL, &root);
+  nx_json* o = create_json_object(NULL, &root);
 
   if (ServiceConfig_IsSet_SelectedConfigId(&service_config))
     create_json_string("SelectedConfigId", o, service_config.SelectedConfigId);

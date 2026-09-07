@@ -127,7 +127,7 @@ static AcpiMethod* ConfigRating_FindMethod(
   const char* method_call
 ) {
   for_each_array(AcpiMethod*, method, config_rating->acpi_info.methods) {
-    if (AcpiAnalysis_Path_Equals(method_call, method->name)) {
+    if (AcpiAnalysis_PathEquals(method_call, method->name)) {
       return method;
     }
   }
@@ -330,7 +330,7 @@ Error ConfigRating_MatchFirmwareFingerprint(
 Error ConfigRating_RateModelConfig(
   const ConfigRating* config_rating,
   const ModelConfig* model_config,
-  ConfigRating_Rating *rating)
+  ConfigRating_Rating* rating)
 {
   Error e;
   ConfigAnalysis* analysis;

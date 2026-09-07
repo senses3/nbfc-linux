@@ -24,6 +24,7 @@
 #include "log.h"
 #include "memory.h"
 #include "file_utils.h"
+#include "console.h"
 #include "client/check_root.h"
 
 #include <float.h>   // FLT_MAX
@@ -62,32 +63,9 @@
 #include "process.c"           // src
 #include "str_functions.c"     // src
 
-#define Console_Black       "\033[0;30m"
-#define Console_Red         "\033[0;31m"
-#define Console_Green       "\033[0;32m"
-#define Console_Yelllow     "\033[0;33m"
-#define Console_Blue        "\033[0;34m"
-#define Console_Magenta     "\033[0;35m"
-#define Console_Cyan        "\033[0;36m"
-#define Console_White       "\033[0;37m"
-#define Console_Gray        "\033[0;38m"
-
-#define Console_BoldBlack   "\033[1;30m"
-#define Console_BoldRed     "\033[1;31m"
-#define Console_BoldGreen   "\033[1;32m"
-#define Console_BoldYelllow "\033[1;33m"
-#define Console_BoldBlue    "\033[1;34m"
-#define Console_BoldMagenta "\033[1;35m"
-#define Console_BoldCyan    "\033[1;36m"
-#define Console_BoldWhite   "\033[1;37m"
-#define Console_BoldGray    "\033[1;38m"
-
-#define Console_Reset       "\033[0;0m"
-#define Console_Clear       "\033[1;1H\033[2J"
-
-#define             RegistersSize 256
-typedef uint8_t     RegisterBuf[RegistersSize];
-typedef const char* RegisterColors[RegistersSize];
+#define             REGISTERS_SIZE 256
+typedef uint8_t     RegisterBuf[REGISTERS_SIZE];
+typedef const char* RegisterColors[REGISTERS_SIZE];
 static RegisterBuf  Registers_Log[32768];
 
 static void         Register_PrintRegister(RegisterBuf*, RegisterColors);
@@ -418,7 +396,7 @@ static Error Map_Load(const char* file) {
   if (Map.loaded)
     return err_success();
 
-  const file_op_result res = slurp_file_dynamic(&content, file);
+  const FileResult res = File_ReadDynamic(&content, file);
   if (! res.ok)
     return err_stdlib(NULL);
 
@@ -580,17 +558,17 @@ int main(int argc, char* const argv[]) {
       break;
     case Option_Help:     printf(HelpTexts[cmd], argv[0]);         return 0;
     case Option_Version:  printf("ec_probe " NBFC_VERSION "\n");   return 0;
-    case Option_Clearly:  options.clearly  = 1;                    break;
-    case Option_Decimal:  options.decimal  = 1;                    break;
-    case Option_Word:     options.use_word = 1;                    break;
-    case Option_Dry:      options.dry = 1;                         break;
+    case Option_Clearly:  options.clearly = true;                  break;
+    case Option_Decimal:  options.decimal = true;                  break;
+    case Option_Word:     options.use_word = true;                 break;
+    case Option_Dry:      options.dry = true;                      break;
     case Option_Map:      options.map = p.optarg;                  break;
     case Option_Report:   options.report   = p.optarg;             break;
     case Option_Color:    options.use_color = ColorEnable;         break;
     case Option_NoColor:  options.use_color = ColorDisable;        break;
     case Option_File:     options.file = p.optarg;                 break;
     case Option_EmbeddedController:
-      switch(EmbeddedControllerType_FromString(p.optarg)) {
+      switch (EmbeddedControllerType_FromString(p.optarg)) {
 #if ENABLE_EC_SYS
         case EmbeddedControllerType_ECSysLinux:     ec = &EC_SysLinux_VTable;      break;
 #endif
@@ -979,7 +957,7 @@ static int AcpiCall(void) {
   return NBFC_EXIT_SUCCESS;
 }
 
-static int Graph() {
+static int Graph(void) {
   char* argv[8] = {0};
   argv[0] = Mem_Strdup(NBFC_MAKE_GRAPH_SCRIPT);
   argv[1] = Mem_Strdup(options.file);
@@ -1000,13 +978,13 @@ static void Handle_Signal(int sig) {
 
 static void Register_PrintRegister(RegisterBuf* self, RegisterColors color) {
   if (color)
-    printf(Console_Reset);
+    printf(CONSOLE_RESET);
 
   printf("%s", RegisterHeader);
 
   for (int i = 0; i <= 0xF0; i += 0x10) {
     if (color)
-      printf(Console_Reset);
+      printf(CONSOLE_RESET);
 
     printf("%.2X |", i);
 
@@ -1024,19 +1002,19 @@ static void Register_PrintRegister(RegisterBuf* self, RegisterColors color) {
 }
 
 static inline void Register_FromEC(RegisterBuf* self) {
-  for (int i = 0; i < RegistersSize; i++)
+  for (int i = 0; i < REGISTERS_SIZE; i++)
     ec->ReadByte((uint8_t) i, &my[i]);
 }
 
 static inline void Register_ToEC(RegisterBuf* self) {
-  for (int i = 0; i < RegistersSize; ++i)
+  for (int i = 0; i < REGISTERS_SIZE; ++i)
     ec->WriteByte((uint8_t) i, my[i]);
 }
 
 static void Register_PrintWatch(RegisterBuf* all_readings, RegisterBuf* current, RegisterBuf* previous) {
   RegisterColors colors;
 
-  for (int register_ = 0; register_ < RegistersSize; ++register_) {
+  for (int register_ = 0; register_ < REGISTERS_SIZE; ++register_) {
     const uint8_t byte = (*current)[register_];
     const uint8_t diff = byte - (*previous)[register_];
     bool has_changed = false;
@@ -1049,20 +1027,20 @@ static void Register_PrintWatch(RegisterBuf* all_readings, RegisterBuf* current,
       }
     }
 
-    /**/ if (diff)          colors[register_] = Console_Yelllow;
-    else if (has_changed)   colors[register_] = Console_BoldBlue;
-    else if (byte == 0xFF)  colors[register_] = Console_White;
-    else if (byte)          colors[register_] = Console_BoldWhite;
-    else                    colors[register_] = Console_BoldBlack;
+    /**/ if (diff)          colors[register_] = CONSOLE_YELLOW;
+    else if (has_changed)   colors[register_] = CONSOLE_BOLD_BLUE;
+    else if (byte == 0xFF)  colors[register_] = CONSOLE_WHITE;
+    else if (byte)          colors[register_] = CONSOLE_BOLD_WHITE;
+    else                    colors[register_] = CONSOLE_BOLD_BLACK;
   }
 
   Register_PrintRegister(current, colors);
 }
 
 static void Register_PrintMonitor(RegisterBuf* readings, int size) {
-  printf(Console_Clear);
+  printf(CONSOLE_CLEAR);
 
-  for (int register_ = 0; register_ < RegistersSize; ++register_) {
+  for (int register_ = 0; register_ < REGISTERS_SIZE; ++register_) {
     bool register_has_changed = false;
     for (range(int, i, 0, size)) {
       if (readings[0][register_] != readings[i][register_]) {
@@ -1074,22 +1052,22 @@ static void Register_PrintMonitor(RegisterBuf* readings, int size) {
     if (! register_has_changed)
       continue;
 
-    printf(Console_Green "0x%.2X:", register_);
+    printf(CONSOLE_GREEN "0x%.2X:", register_);
     uint8_t byte = readings[0][register_];
     for (range(int, i, MAX(size - 24, 0), size)) {
       const uint8_t diff = byte - readings[i][register_];
       byte = readings[i][register_];
       if (diff)
-        printf(Console_BoldBlue " %.2X", byte);
+        printf(CONSOLE_BOLD_BLUE " %.2X", byte);
       else
-        printf(Console_BoldWhite " %.2X", byte);
+        printf(CONSOLE_BOLD_WHITE " %.2X", byte);
     }
     printf("\n");
   }
 }
 
 static void Register_WriteMonitorReport(RegisterBuf* readings, int size, FILE* fh) {
-  for (int register_ = 0; register_ < RegistersSize; ++register_) {
+  for (int register_ = 0; register_ < REGISTERS_SIZE; ++register_) {
     bool register_has_changed = false;
     for (range(int, i, 0, size)) {
       if (readings[0][register_] != readings[i][register_]) {
@@ -1119,13 +1097,13 @@ static void Register_PrintDump(RegisterBuf* self, bool use_color) {
   RegisterColors colors;
 
   if (use_color) {
-    for (int i = 0; i < RegistersSize; ++i)
-      colors[i] = (my[i] == 0x00 ? Console_BoldBlack :
-                   my[i] == 0xFF ? Console_BoldGreen :
-                                   Console_BoldBlue);
+    for (int i = 0; i < REGISTERS_SIZE; ++i)
+      colors[i] = (my[i] == 0x00 ? CONSOLE_BOLD_BLACK :
+                   my[i] == 0xFF ? CONSOLE_BOLD_GREEN :
+                                   CONSOLE_BOLD_BLUE);
 
     Register_PrintRegister(self, colors);
-    printf("%s", Console_Reset);
+    printf("%s", CONSOLE_RESET);
   }
   else {
     Register_PrintRegister(self, NULL);

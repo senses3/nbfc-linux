@@ -15,7 +15,7 @@ Error PID_Write(enum PID_LockMode lock_mode) {
   char buf[32];
   int len = snprintf(buf, sizeof(buf), "%d", getpid());
 
-  if (! write_file(NBFC_PID_FILE, flags, mode, buf, (size_t) len).ok) {
+  if (! File_Write(NBFC_PID_FILE, flags, mode, buf, (size_t) len).ok) {
     e = err_stdlib(NBFC_PID_FILE);
 
     if (errno == EEXIST)

@@ -17,6 +17,8 @@
 #include "config_files.h"
 #include "client_global.h"
 
+#define RECOMMENDED_CONFIG_MATCH_THRESHOLD 0.7f
+
 #define RECOMMENDED_WARNING \
   "\n"                                                                         \
   "                   ====================================\n"                  \
@@ -95,7 +97,7 @@ int Recommend(void) {
     return NBFC_EXIT_FAILURE;
   }
 
-  const char* model_name = DMI_Get_Model_Name();
+  const char* model_name = DMI_GetModelName();
   array_of(ConfigFile) files = List_Recommended_Configs();
   char* config = Get_Supported_Config(&files, model_name);
 
@@ -107,7 +109,7 @@ int Recommend(void) {
 
   bool have_match = false;
   for_each_array(ConfigFile*, file, files) {
-    if (file->diff >= RecommendedConfigMatchThreshold) {
+    if (file->diff >= RECOMMENDED_CONFIG_MATCH_THRESHOLD) {
       have_match = true;
       printf("%s\n", file->config_name);
     }
@@ -127,7 +129,7 @@ int Set_Or_Apply(void) {
 
   // "auto" ===================================================================
   if (! str_cmp_ignorecase(Config_Options.config, "auto")) {
-    config = Get_Supported_Config(&files, DMI_Get_Model_Name());
+    config = Get_Supported_Config(&files, DMI_GetModelName());
 
     if (! config) {
       Log_Error("No config found to apply automatically");

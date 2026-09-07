@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 
-const char* DMI_Get_System_Product(void);
-const char* DMI_Get_System_Vendor(void);
-const char* DMI_Get_Model_Name(void);
-bool        DMI_Model_Name_Equals(const char*, const char*);
+const char* DMI_GetSystemProduct(void);
+const char* DMI_GetSystemVendor(void);
+const char* DMI_GetModelName(void);
+bool        DMI_ModelNameEquals(const char*, const char*);
 
 #endif

@@ -16,7 +16,7 @@ static void AML_Tokens_Print(array_of(AML_Token)* tokens) {
 }
 #endif
 
-static void Test_Init() {
+static void Test_Init(void) {
   str files[1] = {"./DSDT.aml"};
   array_of(str) aml_files;
   aml_files.data = files;
@@ -30,7 +30,7 @@ static void Test_Init() {
   }
 }
 
-static void Test_For_Methods() {
+static void Test_For_Methods(void) {
   bool M001 = false;
   bool M002 = false;
   bool M003 = false;
@@ -89,11 +89,11 @@ static void Test_Pattern_Expect_Error(const char* s, const char* error) {
   }
 }
 
-static void Test_Pattern_Free() {
+static void Test_Pattern_Free(void) {
   AML_Analysis_Pattern_Free(&pattern);
 }
 
-static void Test_Patterns() {
+static void Test_Patterns(void) {
   Test_Pattern_Init("Method(\\FOO)");
   assert(AML_Token_StrEq(&pattern.method_name, "\\FOO", 4));
   assert(pattern.pattern.size == 0);
@@ -140,11 +140,11 @@ static void Test_Tokens_Init(const char* s) {
   }
 }
 
-static void Test_Tokens_Free() {
+static void Test_Tokens_Free(void) {
   Mem_Free(tokens.data);
 }
 
-static void Test_AML_Analysis_RemoveDoubleParentheses() {
+static void Test_AML_Analysis_RemoveDoubleParentheses(void) {
   Test_Tokens_Init("(())");
   AML_Analysis_RemoveDoubleParentheses(&tokens);
   assert(tokens.size == 4);
@@ -247,7 +247,7 @@ static void Test_AML_Analysis_MatchFingerprint(const char* fingerprint, bool exp
   }
 }
 
-int main() {
+int main(void) {
   Test_Init();
   Test_For_Methods();
   Test_Patterns();

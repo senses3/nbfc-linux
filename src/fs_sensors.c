@@ -27,11 +27,11 @@ array_of(FS_TemperatureSource) FS_Sensors_Sources = {0};
 
 Error FS_TemperatureSource_GetTemperature(const FS_TemperatureSource* self, float* out) {
   char buf[32];
-  file_op_result res;
+  FileResult res;
   res.ok = true;
 
   if (self->type == FS_TemperatureSource_File) {
-    res = slurp_file(buf, sizeof(buf), my.file);
+    res = File_Read(buf, sizeof(buf), my.file);
   }
   else if (self->type == FS_TemperatureSource_Nvidia) {
     return Nvidia_GetTemperature(out);
@@ -83,7 +83,7 @@ static Error FS_Sensors_Init_HwMon(void) {
       snprintf(file, PATH_MAX, "%s/name", dir);
 
       char source_name[256];
-      file_op_result res = slurp_file(source_name, sizeof(source_name), file);
+      FileResult res = File_Read(source_name, sizeof(source_name), file);
       if (! res.ok) {
         if (errno != ENOENT) {
           e = err_stdlib(file);
@@ -151,7 +151,7 @@ void FS_Sensors_Log(void) {
 // Check /proc/cmdline for vfio-pci.ids or vfio_pci.ids (fast path).
 static bool FS_Sensors_VFIO_CheckProcCmdline(void) {
   char cmdline[4096];
-  file_op_result res = slurp_file(cmdline, sizeof(cmdline), "/proc/cmdline");
+  FileResult res = File_Read(cmdline, sizeof(cmdline), "/proc/cmdline");
   if (!res.ok)
     return false;
 
@@ -180,7 +180,7 @@ static bool FS_Sensors_VFIO_CheckSysBusPciDevices(void) {
              "%s/%s/vendor", FS_SENSORS_PCI_DEVICES_PATH, entry->d_name);
 
     char vendor[8];
-    file_op_result res = slurp_file(vendor, sizeof(vendor), vendor_path);
+    FileResult res = File_Read(vendor, sizeof(vendor), vendor_path);
     if (!res.ok)
       continue;
 

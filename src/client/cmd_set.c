@@ -30,7 +30,7 @@ int Set(void) {
     return NBFC_EXIT_CMDLINE;
   }
 
-  if (Service_Get_PID() == -1) {
+  if (Service_GetPID() == -1) {
     Log_Error("Service not running");
     return NBFC_EXIT_FAILURE;
   }

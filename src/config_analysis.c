@@ -71,7 +71,7 @@ static Error ConfigAnalysis_PushMethod(const char* method, bool unique) {
 
   if (unique) {
     for (size_t i = 0; i < ConfigAnalysis_Info.methods_size; ++i)
-      if (AcpiAnalysis_Path_Equals(method, ConfigAnalysis_Info.methods[i]))
+      if (AcpiAnalysis_PathEquals(method, ConfigAnalysis_Info.methods[i]))
         return err_success();
   }
 
@@ -88,10 +88,10 @@ static int ConfigAnalysis_EC_Read(lua_State* l) {
   const lua_Integer register_ = luaL_checkinteger(l, 1);
 
   if (register_ < 0)
-    return Lua_Return_Error(l, "ec_read(): register < 0");
+    return Lua_ReturnError(l, "ec_read(): register < 0");
 
   if (register_ > 255)
-    return Lua_Return_Error(l, "ec_read(): register > 255");
+    return Lua_ReturnError(l, "ec_read(): register > 255");
 
   const enum RegisterType type = (
     ConfigAnalysis_InRegisterWriteConfiguration ?
@@ -101,19 +101,19 @@ static int ConfigAnalysis_EC_Read(lua_State* l) {
 
   Error e = ConfigAnalysis_PushRegister((uint8_t) register_, type, false);
   if (e)
-    return Lua_Return_Error(l, err_print_all(e));
+    return Lua_ReturnError(l, err_print_all(e));
 
-  return Lua_Return_Integer(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
+  return Lua_ReturnInteger(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
 }
 
 static int ConfigAnalysis_EC_ReadWord(lua_State* l) {
   const lua_Integer register_ = luaL_checkinteger(l, 1);
 
   if (register_ < 0)
-    return Lua_Return_Error(l, "ec_read_word(): register < 0");
+    return Lua_ReturnError(l, "ec_read_word(): register < 0");
 
   if (register_ > 254)
-    return Lua_Return_Error(l, "ec_read_word(): register > 254");
+    return Lua_ReturnError(l, "ec_read_word(): register > 254");
 
   const enum RegisterType type = (
     ConfigAnalysis_InRegisterWriteConfiguration ?
@@ -123,9 +123,9 @@ static int ConfigAnalysis_EC_ReadWord(lua_State* l) {
 
   Error e = ConfigAnalysis_PushRegister((uint8_t) register_, type, true);
   if (e)
-    return Lua_Return_Error(l, err_print_all(e));
+    return Lua_ReturnError(l, err_print_all(e));
 
-  return Lua_Return_Integer(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
+  return Lua_ReturnInteger(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
 }
 
 static int ConfigAnalysis_EC_Write(lua_State* l) {
@@ -133,16 +133,16 @@ static int ConfigAnalysis_EC_Write(lua_State* l) {
   const lua_Integer value = luaL_checkinteger(l, 2);
 
   if (register_ < 0)
-    return Lua_Return_Error(l, "ec_write(): register < 0");
+    return Lua_ReturnError(l, "ec_write(): register < 0");
 
   if (register_ > 255)
-    return Lua_Return_Error(l, "ec_write(): register > 255");
+    return Lua_ReturnError(l, "ec_write(): register > 255");
 
   if (value < 0)
-    return Lua_Return_Error(l, "ec_write(): value < 0");
+    return Lua_ReturnError(l, "ec_write(): value < 0");
 
   if (value > 255)
-    return Lua_Return_Error(l, "ec_write(): value > 255");
+    return Lua_ReturnError(l, "ec_write(): value > 255");
 
   const enum RegisterType type = (
     ConfigAnalysis_InRegisterWriteConfiguration ?
@@ -152,9 +152,9 @@ static int ConfigAnalysis_EC_Write(lua_State* l) {
 
   Error e = ConfigAnalysis_PushRegister((uint8_t) register_, type, false);
   if (e)
-    return Lua_Return_Error(l, err_print_all(e));
+    return Lua_ReturnError(l, err_print_all(e));
 
-  return Lua_Return_Integer(l, 0);
+  return Lua_ReturnInteger(l, 0);
 }
 
 static int ConfigAnalysis_EC_WriteWord(lua_State* l) {
@@ -162,16 +162,16 @@ static int ConfigAnalysis_EC_WriteWord(lua_State* l) {
   const lua_Integer value = luaL_checkinteger(l, 2);
 
   if (register_ < 0)
-    return Lua_Return_Error(l, "ec_write_word(): register < 0");
+    return Lua_ReturnError(l, "ec_write_word(): register < 0");
 
   if (register_ > 254)
-    return Lua_Return_Error(l, "ec_write_word(): register > 254");
+    return Lua_ReturnError(l, "ec_write_word(): register > 254");
 
   if (value < 0)
-    return Lua_Return_Error(l, "ec_write_word(): value < 0");
+    return Lua_ReturnError(l, "ec_write_word(): value < 0");
 
   if (value > UINT16_MAX)
-    return Lua_Return_Error(l, "ec_write_word(): value > 65535");
+    return Lua_ReturnError(l, "ec_write_word(): value > 65535");
 
   const enum RegisterType type = (
     ConfigAnalysis_InRegisterWriteConfiguration ?
@@ -181,9 +181,9 @@ static int ConfigAnalysis_EC_WriteWord(lua_State* l) {
 
   Error e = ConfigAnalysis_PushRegister((uint8_t) register_, type, true);
   if (e)
-    return Lua_Return_Error(l, err_print_all(e));
+    return Lua_ReturnError(l, err_print_all(e));
 
-  return Lua_Return_Integer(l, 0);
+  return Lua_ReturnInteger(l, 0);
 }
 
 static int ConfigAnalysis_ACPI_Call(lua_State* l) {
@@ -192,9 +192,9 @@ static int ConfigAnalysis_ACPI_Call(lua_State* l) {
 
   Error e = ConfigAnalysis_PushMethod(method, true);
   if (e)
-    return Lua_Return_Error(l, err_print_all(e));
+    return Lua_ReturnError(l, err_print_all(e));
 
-  return Lua_Return_Integer(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
+  return Lua_ReturnInteger(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
 }
 
 static int ConfigAnalysis_ACPI_CallRaw(lua_State* l) {
@@ -203,9 +203,9 @@ static int ConfigAnalysis_ACPI_CallRaw(lua_State* l) {
 
   Error e = ConfigAnalysis_PushMethod(method, true);
   if (e)
-    return Lua_Return_Error(l, err_print_all(e));
+    return Lua_ReturnError(l, err_print_all(e));
 
-  return Lua_Return_String(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE_RAW);
+  return Lua_ReturnString(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE_RAW);
 }
 
 static int ConfigAnalysis_ACPI_GetInt(lua_State* l) {
@@ -213,7 +213,7 @@ static int ConfigAnalysis_ACPI_GetInt(lua_State* l) {
   luaL_checklstring(l, 1, &len); // result
   luaL_checklstring(l, 2, &len); // path
 
-  return Lua_Return_Integer(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
+  return Lua_ReturnInteger(l, CONFIG_ANALYSIS_DUMMY_RETURN_VALUE);
 }
 
 static Error ConfigAnalysis_Begin(void) {

@@ -23,10 +23,10 @@
 #include "../service_config.h"
 #include "../file_utils.h"
 
-pid_t Service_Get_PID(void) {
+pid_t Service_GetPID(void) {
   const char* err;
   char buf[32];
-  if (! slurp_file(buf, sizeof(buf), NBFC_PID_FILE).ok) {
+  if (! File_Read(buf, sizeof(buf), NBFC_PID_FILE).ok) {
     if (errno == ENOENT)
       return -1;
     else {
@@ -67,11 +67,11 @@ Error Client_Communicate(const nx_json* in, char** buf, const nx_json** out) {
     goto error;
   }
 
-  e = Protocol_Send_Json(sock, in);
+  e = Protocol_SendJson(sock, in);
   if (e)
     goto error;
 
-  e = Protocol_Receive_Json(sock, buf, out);
+  e = Protocol_ReceiveJson(sock, buf, out);
   if (e)
     goto error;
 
@@ -81,7 +81,7 @@ error:
 }
 
 void ServiceConfig_Load(void) {
-  if (! file_exists(NBFC_SERVICE_CONFIG)) {
+  if (! File_Exists(NBFC_SERVICE_CONFIG)) {
     memset(&service_config, 0, sizeof(service_config)); // Clear values
     return;
   }
@@ -181,7 +181,7 @@ void Service_LoadAllConfigFiles(ModelConfig* model_config) {
 }
 
 int Service_Start(bool read_only) {
-  pid_t pid = Service_Get_PID();
+  pid_t pid = Service_GetPID();
   if (pid != -1) {
     Log_Info("Service already running (pid: %d)", pid);
     return NBFC_EXIT_SUCCESS;
@@ -205,7 +205,7 @@ int Service_Start(bool read_only) {
 }
 
 int Service_Stop(void) {
-  pid_t pid = Service_Get_PID();
+  pid_t pid = Service_GetPID();
   if (pid == -1) {
     Log_Error("Service not running");
     return NBFC_EXIT_SUCCESS;

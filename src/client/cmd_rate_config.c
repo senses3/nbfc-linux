@@ -155,7 +155,7 @@ static char* RateConfig_GetRules(const char* rules_file, bool no_download) {
   char* out;
 
   if (rules_file) {
-    if (! slurp_file_dynamic(&out, rules_file).ok) {
+    if (! File_ReadDynamic(&out, rules_file).ok) {
       Log_Error("%s: %s", rules_file, strerror(errno));
       return NULL;
     }
@@ -640,7 +640,7 @@ static Error RateConfig_RateFromFile(
 ) {
   Error e;
   char* content;
-  file_op_result res;
+  FileResult res;
   array_of(ConfigFile) files;
 
   // Check for '-'
@@ -648,7 +648,7 @@ static Error RateConfig_RateFromFile(
     file = "/dev/stdin";
 
   // Read the file
-  res = slurp_file_dynamic(&content, file);
+  res = File_ReadDynamic(&content, file);
   if (! res.ok)
     return err_stdlib(file);
 
@@ -812,7 +812,7 @@ int RateConfig(void) {
   }
 
   for (size_t i = 0; i < RateConfig_Options.dsdt_files_size; ++i) {
-    if (! file_is_readable(RateConfig_Options.dsdt_files[i])) {
+    if (! File_IsReadable(RateConfig_Options.dsdt_files[i])) {
       Log_Error("%s: %s", RateConfig_Options.dsdt_files[i], strerror(errno));
       return NBFC_EXIT_FAILURE;
     }

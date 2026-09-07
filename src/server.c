@@ -107,7 +107,7 @@ static Error Server_Command_Set_Fan(int socket, const nx_json* json) {
   nx_json *o = create_json_object(NULL, &root);
   create_json_string("Status", o, "OK");
 
-  Error e = Protocol_Send_Json(socket, o);
+  Error e = Protocol_SendJson(socket, o);
   nx_json_free(o);
   return e;
 }
@@ -142,7 +142,7 @@ static Error Server_Command_Status(int socket, const nx_json* json) {
     create_json_integer("SpeedSteps", fan_json, Fan_GetSpeedSteps(fan));
   }
 
-  Error e = Protocol_Send_Json(socket, o);
+  Error e = Protocol_SendJson(socket, o);
   nx_json_free(o);
   return e;
 }
@@ -366,7 +366,7 @@ static void Server_HandleClient(Client* client) {
 end:
   nx_json_free(json);
   if (e)
-    Protocol_Send_Error(client->fd, err_print_all(e));
+    Protocol_SendError(client->fd, err_print_all(e));
   close(client->fd);
   client->active = false;
 }

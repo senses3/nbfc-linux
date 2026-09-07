@@ -117,7 +117,7 @@ Error AcpiAnalysis_IsAcpiExecInstalled(void);
 Error AcpiAnalysis_DisassembleFile(const char*, char**);
 Error AcpiAnalysis_GetInfo(const array_of(str)*, AcpiInfo*);
 
-bool  AcpiAnalysis_Path_Equals(const char*, const char*);
+bool  AcpiAnalysis_PathEquals(const char*, const char*);
 bool  AcpiAnalysis_IsEmbeddedControllerRegion(const AcpiInfo*, const char*);
 void  AcpiAnalysis_AddEmbeddedControllerRegion(AcpiInfo*, const char*);
 void  AcpiAnalysis_AddUnverifiedEmbeddedControllerRegions(AcpiInfo*);

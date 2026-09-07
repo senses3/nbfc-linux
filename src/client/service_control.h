@@ -8,7 +8,7 @@
 #include "../nxjson.h"
 #include "../model_config.h"
 
-pid_t Service_Get_PID(void);
+pid_t Service_GetPID(void);
 int   Service_Start(bool);
 int   Service_Stop(void);
 int   Service_Restart(bool);

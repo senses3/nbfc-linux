@@ -10,7 +10,7 @@
  * TODO: Check if arguments are also equal
  */
 static bool AcpiMethodCall_Equal(const char* a, const char* b) {
-  return AcpiAnalysis_Path_Equals(a, b);
+  return AcpiAnalysis_PathEquals(a, b);
 }
 
 /*
@@ -86,7 +86,7 @@ static bool RegisterWriteConfiguration_IsSimilar(
     if (! AcpiMethodCall_Equal(a->AcpiMethod, b->AcpiMethod))
       return false;
   }
-  else if(a->WriteMode == RegisterWriteMode_Lua) {
+  else if (a->WriteMode == RegisterWriteMode_Lua) {
     if (strcmp(a->LuaCode.source, b->LuaCode.source))
       return false;
   }

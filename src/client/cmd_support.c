@@ -18,17 +18,17 @@
 
 const struct cli99_Option Support_CommandLine[] = {
   cli99_Options_Include(&Main_CommandLine),
-  {"--upload-firmware", Option_Support_Upload_Firmware, cli99_NoArgument},
-  {"--print-command",   Option_Support_Print_Command,   cli99_NoArgument},
-  {"--create-archive",  Option_Support_Create_Archive,  cli99_RequiredArgument},
+  {"--upload-firmware", Option_Support_UploadFirmware, cli99_NoArgument},
+  {"--print-command",   Option_Support_PrintCommand,   cli99_NoArgument},
+  {"--create-archive",  Option_Support_CreateArchive,  cli99_RequiredArgument},
   cli99_Options_End()
 };
 
 enum Support_Action {
   Support_Action_None = 0,
-  Support_Action_Upload_Firmware,
-  Support_Action_Print_Command,
-  Support_Action_Create_Archive,
+  Support_Action_UploadFirmware,
+  Support_Action_PrintCommand,
+  Support_Action_CreateArchive,
 };
 
 struct {
@@ -45,7 +45,7 @@ struct {
  * The actual URL is retrieved from the official GitHub repository to
  * ensure compatibility in case the upload endpoint changes.
  */
-static char* Support_Get_Real_Firmware_Upload_Endpoint_URL(void) {
+static char* Support_GetRealFirmwareUploadURL(void) {
   CURL* curl = CurlWithMem_Create(SUPPORT_FIRMWARE_UPLOAD_ENDPOINT_URL, NULL);
   CURLcode code;
   long http_code;
@@ -74,7 +74,7 @@ static char* Support_Get_Real_Firmware_Upload_Endpoint_URL(void) {
   return real_endpoint;
 }
 
-static char* Support_Do_Upload(const char* model, array_of(str)* files) {
+static char* Support_DoUpload(const char* model, array_of(str)* files) {
   char* endpoint_url = NULL;
   char* response = NULL;
   CURL* curl = NULL;
@@ -84,7 +84,7 @@ static char* Support_Do_Upload(const char* model, array_of(str)* files) {
   long http_code;
 
   // Get real endpoint URL
-  endpoint_url = Support_Get_Real_Firmware_Upload_Endpoint_URL();
+  endpoint_url = Support_GetRealFirmwareUploadURL();
 
   // Perform upload
   curl = CurlWithMem_Create(endpoint_url, NULL);
@@ -172,7 +172,7 @@ end:
   return response;
 }
 
-static int Support_Handle_Response(char* response) {
+static int Support_HandleResponse(char* response) {
   int ret = NBFC_EXIT_FAILURE;
   const nx_json* status = NULL;
   const nx_json* message = NULL;
@@ -241,7 +241,7 @@ end:
   return ret;
 }
 
-static int Support_Upload_Firmware(void) {
+static int Support_UploadFirmware(void) {
   Error e;
   array_of(str) files;
 
@@ -255,22 +255,22 @@ static int Support_Upload_Firmware(void) {
   }
 
   // Do the upload
-  char* response = Support_Do_Upload(DMI_Get_Model_Name(), &files);
+  char* response = Support_DoUpload(DMI_GetModelName(), &files);
   if (! response)
     return NBFC_EXIT_FAILURE;
 
   // Handle response
-  int ret = Support_Handle_Response(response);
+  int ret = Support_HandleResponse(response);
 #if STRICT_CLEANUP
   Mem_Free(response);
 #endif
   return ret;
 }
 
-static int Support_Print_Command(void) {
+static int Support_PrintCommand(void) {
   Error e;
   array_of(str) files;
-  char* endpoint_url = Support_Get_Real_Firmware_Upload_Endpoint_URL();
+  char* endpoint_url = Support_GetRealFirmwareUploadURL();
 
   e = AcpiAnalysis_GetAmlFiles(NULL, &files);
   if (e) {
@@ -284,7 +284,7 @@ static int Support_Print_Command(void) {
     "sudo curl -X POST '%s' \\\n"
     " -F 'model=%s' \\\n",
     endpoint_url,
-    DMI_Get_Model_Name()
+    DMI_GetModelName()
   );
 
   for_enumerate_array(array_size_t, i, files) {
@@ -304,7 +304,7 @@ static int Support_Print_Command(void) {
   return NBFC_EXIT_SUCCESS;
 }
 
-int Support_Create_Archive(const char* archive_file) {
+int Support_CreateArchive(const char* archive_file) {
   check_root();
 
   return execl(
@@ -323,8 +323,8 @@ int Support(void) {
     return NBFC_EXIT_SUCCESS;
   }
 
-  if (Support_Options.action == Support_Action_Create_Archive) {
-    return Support_Create_Archive(Support_Options.archive_file);
+  if (Support_Options.action == Support_Action_CreateArchive) {
+    return Support_CreateArchive(Support_Options.archive_file);
   }
 
   if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
@@ -332,10 +332,10 @@ int Support(void) {
     return NBFC_EXIT_FAILURE;
   }
 
-  if (Support_Options.action == Support_Action_Upload_Firmware)
-    ret = Support_Upload_Firmware();
-  else if (Support_Options.action == Support_Action_Print_Command)
-    ret = Support_Print_Command();
+  if (Support_Options.action == Support_Action_UploadFirmware)
+    ret = Support_UploadFirmware();
+  else if (Support_Options.action == Support_Action_PrintCommand)
+    ret = Support_PrintCommand();
 
 #if STRICT_CLEANUP
   curl_global_cleanup();

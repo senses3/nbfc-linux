@@ -70,9 +70,9 @@ enum Option {
   Option_Update_Quiet,
 
   // Support options
-  Option_Support_Upload_Firmware,
-  Option_Support_Print_Command,
-  Option_Support_Create_Archive,
+  Option_Support_UploadFirmware,
+  Option_Support_PrintCommand,
+  Option_Support_CreateArchive,
 
   // Show-Variable options
   Option_ShowVariable_Variable,

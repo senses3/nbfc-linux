@@ -3,8 +3,6 @@
 
 #include "../macros.h"
 
-#define RecommendedConfigMatchThreshold 0.7f
-
 struct ConfigFile {
   char* config_name;
   float diff;

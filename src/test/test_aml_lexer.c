@@ -26,7 +26,7 @@ static void Test_AML_Lexer_GetToken(const char* s, AML_TokenType expected) {
   }
 }
 
-int main() {
+int main(void) {
 #define T(...) Test_AML_Lexer_GetToken(__VA_ARGS__)
   T("(",        AML_TOK_OP_ParenOpen);
   T(")",        AML_TOK_OP_ParenClose);

@@ -310,7 +310,7 @@ int AcpiDump(void) {
   }
 
   for (size_t i = 0; i < AcpiDump_Options.files_size; ++i) {
-    if (! file_is_readable(AcpiDump_Options.files[i])) {
+    if (! File_IsReadable(AcpiDump_Options.files[i])) {
       Log_Error("%s: %s", AcpiDump_Options.files[i], strerror(errno));
       return NBFC_EXIT_FAILURE;
     }

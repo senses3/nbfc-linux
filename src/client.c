@@ -135,7 +135,7 @@ static enum Command Command_FromString(const char* s) {
   return Command_End;
 }
 
-static const struct cli99_Option *Options[] = {
+static const struct cli99_Option* Options[] = {
 #define o(COMMAND, ENUM, HELP, OPTIONS)  OPTIONS ## _CommandLine,
   NBFC_CLIENT_COMMANDS
 #undef o
@@ -382,16 +382,16 @@ int main(int argc, char* const argv[]) {
     // Support options
     // ========================================================================
 
-    case Option_Support_Upload_Firmware:
-      Support_Options.action = Support_Action_Upload_Firmware;
+    case Option_Support_UploadFirmware:
+      Support_Options.action = Support_Action_UploadFirmware;
       break;
 
-    case Option_Support_Print_Command:
-      Support_Options.action = Support_Action_Print_Command;
+    case Option_Support_PrintCommand:
+      Support_Options.action = Support_Action_PrintCommand;
       break;
 
-    case Option_Support_Create_Archive:
-      Support_Options.action = Support_Action_Create_Archive;
+    case Option_Support_CreateArchive:
+      Support_Options.action = Support_Action_CreateArchive;
       Support_Options.archive_file = p.optarg;
       break;
 

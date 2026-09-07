@@ -26,7 +26,7 @@ ConfigFile* ConfigFiles_Find(array_of(ConfigFile)* files, const char* name) {
 // Find a ConfigFile by config_name (loose matching)
 ConfigFile* ConfigFiles_FindLoose(array_of(ConfigFile)* files, const char* name) {
   for_each_array(ConfigFile*, file, *files) {
-    if (DMI_Model_Name_Equals(file->config_name, name))
+    if (DMI_ModelNameEquals(file->config_name, name))
       return file;
   }
 
@@ -114,7 +114,7 @@ array_of(ConfigFile) List_All_Configs(void) {
 
   a = List_Configs_In_Directory(NBFC_MODEL_CONFIGS_DIR);
 
-  if (file_exists(NBFC_MODEL_CONFIGS_DIR_MUTABLE))
+  if (File_Exists(NBFC_MODEL_CONFIGS_DIR_MUTABLE))
     b = List_Configs_In_Directory(NBFC_MODEL_CONFIGS_DIR_MUTABLE);
   else
     return a;
@@ -128,10 +128,10 @@ array_of(ConfigFile) List_All_Configs(void) {
 // List all configs (in the static config directory as well as in the mutable config directory).
 // The `diff` field of the ConfigFile structure will also be set.
 array_of(ConfigFile) List_Recommended_Configs(void) {
-  const char* model_name = DMI_Get_Model_Name();
+  const char* model_name = DMI_GetModelName();
   array_of(ConfigFile) files = List_All_Configs();
   for_each_array(ConfigFile*, file, files) {
-    char* config_name = DMI_Replace_Vendor_Alias(file->config_name);
+    char* config_name = DMI_ReplaceVendorAlias(file->config_name);
     file->diff = str_similarity(model_name, config_name);
     Mem_Free(config_name);
   }
@@ -183,7 +183,7 @@ char* Get_Supported_Config_From_SupportFile(const char* support_file, array_of(C
     if (model->type != NX_JSON_STRING) {
       Log_Warn("%s: Invalid value for model \"%s\": Not a string", support_file, model->key);
     }
-    else if (DMI_Model_Name_Equals(model->key, model_name)) {
+    else if (DMI_ModelNameEquals(model->key, model_name)) {
       if (config) {
         Log_Warn("%s: Duplicate model key: \"%s\"", support_file, model->key);
       }
@@ -197,7 +197,7 @@ end:
   if (config) {
     // Ensure that the model actually exists
     for_each_array(ConfigFile*, file, *config_files) {
-      if (DMI_Model_Name_Equals(file->config_name, config)) {
+      if (DMI_ModelNameEquals(file->config_name, config)) {
         Mem_Free(config);
         return Mem_Strdup(file->config_name);
       }
@@ -211,7 +211,7 @@ end:
   else {
     // Not found in support database, try a direct match on `config_files`
     for_each_array(ConfigFile*, file, *config_files) {
-      if (DMI_Model_Name_Equals(file->config_name, model_name)) {
+      if (DMI_ModelNameEquals(file->config_name, model_name)) {
         return Mem_Strdup(file->config_name);
       }
     }
@@ -223,7 +223,7 @@ end:
 char* Get_Supported_Config(array_of(ConfigFile)* files, const char* model) {
   char* config = NULL;
 
-  if (file_exists(NBFC_MODEL_SUPPORT_FILE_MUTABLE))
+  if (File_Exists(NBFC_MODEL_SUPPORT_FILE_MUTABLE))
     config = Get_Supported_Config_From_SupportFile(NBFC_MODEL_SUPPORT_FILE_MUTABLE, files, model);
 
   if (! config)

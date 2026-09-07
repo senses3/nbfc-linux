@@ -330,7 +330,7 @@ static Error array_of_FromJson(FromJson_Callback callback, void** v_data, array_
 }
 
 #define define_array_of_T_FromJson(T) \
-static inline Error array_of_##T##_FromJson(array_of(T)* v, const nx_json *json) { \
+static inline Error array_of_##T##_FromJson(array_of(T)* v, const nx_json* json) { \
   return array_of_FromJson((FromJson_Callback*) T ## _FromJson, (void**) &v->data, &v->size, sizeof(T), json); \
 }
 
@@ -788,22 +788,22 @@ err:
 Error ModelConfig_FindAndLoad(ModelConfig* config, char* resolved, const char* file) {
   // Try absolute path
   snprintf(resolved, PATH_MAX, "%s", file);
-  if (file_exists(file))
+  if (File_Exists(file))
     return ModelConfig_FromFile(config, file);
 
   // Try NBFC_MODEL_CONFIGS_DIR_MUTABLE (without additional ".json")
   snprintf(resolved, PATH_MAX, "%s/%s", NBFC_MODEL_CONFIGS_DIR_MUTABLE, file);
-  if (file_exists(resolved))
+  if (File_Exists(resolved))
     return ModelConfig_FromFile(config, resolved);
 
   // Try NBFC_MODEL_CONFIGS_DIR_MUTABLE (with additional ".json")
   snprintf(resolved, PATH_MAX, "%s/%s.json", NBFC_MODEL_CONFIGS_DIR_MUTABLE, file);
-  if (file_exists(resolved))
+  if (File_Exists(resolved))
     return ModelConfig_FromFile(config, resolved);
 
   // Try NBFC_MODEL_CONFIGS_DIR (without additional ".json")
   snprintf(resolved, PATH_MAX, "%s/%s", NBFC_MODEL_CONFIGS_DIR, file);
-  if (file_exists(resolved))
+  if (File_Exists(resolved))
     return ModelConfig_FromFile(config, resolved);
 
   // Try NBFC_MODEL_CONFIGS_DIR (with additional ".json")

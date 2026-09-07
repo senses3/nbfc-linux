@@ -65,7 +65,7 @@ err:
 
 Error ServiceState_Write(void) {
   nx_json root = {0};
-  nx_json *o = create_json_object(NULL, &root);
+  nx_json* o = create_json_object(NULL, &root);
 
   if (service_state.TargetFanSpeeds.size) {
     nx_json* fanspeeds = create_json_array("TargetFanSpeeds", o);

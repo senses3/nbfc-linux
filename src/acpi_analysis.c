@@ -569,7 +569,7 @@ Error AcpiAnalysis_DisassembleFile(const char* file, char** out) {
     goto end;
   }
 
-  file_op_result res = slurp_file_dynamic(out, temp_file);
+  FileResult res = File_ReadDynamic(out, temp_file);
   if (! res.ok) {
     e = err_stdlib(temp_file);
     goto end;
@@ -594,7 +594,7 @@ end:
  *
  * Parsing stops at NUL, '.' or any whitespace / control characters.
  */
-static uint32_t AcpiAnalysis_Segment_To_UInt(const char** s) {
+static uint32_t AcpiAnalysis_SegmentToUInt(const char** s) {
   uint32_t val = 0;
 
   for (int i = 0; i < 4; ++i) {
@@ -616,9 +616,9 @@ static uint32_t AcpiAnalysis_Segment_To_UInt(const char** s) {
  * Checks if both segments are equal while advancing both pointers to the
  * end of the segments.
  */
-static inline bool AcpiAnalysis_Segment_Equal(const char** s1, const char** s2) {
-  const uint32_t i1 = AcpiAnalysis_Segment_To_UInt(s1);
-  const uint32_t i2 = AcpiAnalysis_Segment_To_UInt(s2);
+static inline bool AcpiAnalysis_SegmentEquals(const char** s1, const char** s2) {
+  const uint32_t i1 = AcpiAnalysis_SegmentToUInt(s1);
+  const uint32_t i2 = AcpiAnalysis_SegmentToUInt(s2);
   return i1 == i2;
 }
 
@@ -629,7 +629,7 @@ static inline bool AcpiAnalysis_Segment_Equal(const char** s1, const char** s2) 
  *
  * The path may start with a backslash.
  */
-bool AcpiAnalysis_Path_Equals(const char* s1, const char* s2) {
+bool AcpiAnalysis_PathEquals(const char* s1, const char* s2) {
   // Check for leading backslash
   if (*s1 == '\\' || *s2 == '\\') {
     if (*s1 != *s2)
@@ -644,7 +644,7 @@ bool AcpiAnalysis_Path_Equals(const char* s1, const char* s2) {
     if (*s1 <= 32 || *s2 <= 32)
       return (*s1 <= 32 && *s2 <= 32);
 
-    if (! AcpiAnalysis_Segment_Equal(&s1, &s2))
+    if (! AcpiAnalysis_SegmentEquals(&s1, &s2))
       return false;
 
     if (*s1 == '.' || *s2 == '.') {
@@ -704,14 +704,14 @@ Error AcpiAnalysis_GetAmlFiles(const char* dir, array_of(str)* out) {
     dir = ACPI_ANALYSIS_ACPI_DIR;
 
   snprintf(data[0], PATH_MAX, "%s/%s", dir, "DSDT");
-  if (file_exists(data[0])) {
+  if (File_Exists(data[0])) {
     files[0] = data[0];
     files_size = 1;
   }
 
   for (size_t i = 1; i < ACPI_ANALYSIS_MAX_SSDT_FILES; ++i) {
     snprintf(data[i], PATH_MAX, "%s/SSDT%zu", dir, i);
-    if (file_exists(data[i])) {
+    if (File_Exists(data[i])) {
       if (files_size >= ACPI_ANALYSIS_MAX_AML_FILES)
         return err_stringf("Too many SSDT files found in %s", ACPI_ANALYSIS_ACPI_DIR);
 

@@ -11,23 +11,23 @@
 #include "../file_utils.h"
 #include "../str_functions.h"
 
-#define DMI_Directory       "/sys/devices/virtual/dmi/id"
-#define DMI_ProductNameFile DMI_Directory "/product_name"
-#define DMI_SysVendorFile   DMI_Directory "/sys_vendor"
+#define DMI_BASE_DIRECTORY    "/sys/devices/virtual/dmi/id"
+#define DMI_PRODUCT_NAME_FILE DMI_BASE_DIRECTORY "/product_name"
+#define DMI_SYS_VENDOR_FILE   DMI_BASE_DIRECTORY "/sys_vendor"
 
-struct DMI_Vendor_Alias {
+struct DMI_VendorAlias {
   const char* vendor;
   const char* alias;
 };
 
-static const struct DMI_Vendor_Alias DMI_Vendor_Aliases[] = {
+static const struct DMI_VendorAlias DMI_VendorAliases[] = {
   { "Hewlett-Packard",       "HP"   },
   { "ASUSTeK COMPUTER INC.", "Asus" },
   { NULL, NULL }
 };
 
-static const char* DMI_Find_Vendor_Alias(const char* vendor) {
-  for (const struct DMI_Vendor_Alias* a = DMI_Vendor_Aliases; a->vendor; ++a) {
+static const char* DMI_FindVendorAlias(const char* vendor) {
+  for (const struct DMI_VendorAlias* a = DMI_VendorAliases; a->vendor; ++a) {
     if (! strcmp(a->vendor, vendor))
       return a->alias;
   }
@@ -35,8 +35,8 @@ static const char* DMI_Find_Vendor_Alias(const char* vendor) {
   return NULL;
 }
 
-static char* DMI_Replace_Vendor_Alias(const char* model_name) {
-  for (const struct DMI_Vendor_Alias* a = DMI_Vendor_Aliases; a->vendor; ++a) {
+static char* DMI_ReplaceVendorAlias(const char* model_name) {
+  for (const struct DMI_VendorAlias* a = DMI_VendorAliases; a->vendor; ++a) {
     if (! strncmp(model_name, a->vendor, strlen(a->vendor))) {
       return str_replace_prefix(model_name, a->vendor, a->alias);
     }
@@ -45,19 +45,19 @@ static char* DMI_Replace_Vendor_Alias(const char* model_name) {
   return Mem_Strdup(model_name);
 }
 
-bool DMI_Model_Name_Equals(const char* a, const char* b) {
-  char* a_replaced = DMI_Replace_Vendor_Alias(a);
-  char* b_replaced = DMI_Replace_Vendor_Alias(b);
+bool DMI_ModelNameEquals(const char* a, const char* b) {
+  char* a_replaced = DMI_ReplaceVendorAlias(a);
+  char* b_replaced = DMI_ReplaceVendorAlias(b);
   const bool equals = !str_cmp_ignorecase(a_replaced, b_replaced);
   Mem_Free(a_replaced);
   Mem_Free(b_replaced);
   return equals;
 }
 
-const char* DMI_Get_System_Product(void) {
+const char* DMI_GetSystemProduct(void) {
   static char buf[128];
 
-  if (! slurp_file(buf, sizeof(buf), DMI_ProductNameFile).ok)
+  if (! File_Read(buf, sizeof(buf), DMI_PRODUCT_NAME_FILE).ok)
     goto error;
 
   buf[strcspn(buf, "\n")] = '\0';
@@ -70,14 +70,14 @@ const char* DMI_Get_System_Product(void) {
   return buf;
 
 error:
-  Log_Error("Could not get product name. Failed to read " DMI_ProductNameFile ": %s", strerror(errno));
+  Log_Error("Could not get product name. Failed to read " DMI_PRODUCT_NAME_FILE ": %s", strerror(errno));
   exit(NBFC_EXIT_FAILURE);
 }
 
-const char* DMI_Get_System_Vendor(void) {
+const char* DMI_GetSystemVendor(void) {
   static char buf[128];
 
-  if (! slurp_file(buf, sizeof(buf), DMI_SysVendorFile).ok)
+  if (! File_Read(buf, sizeof(buf), DMI_SYS_VENDOR_FILE).ok)
     goto error;
 
   buf[strcspn(buf, "\n")] = '\0';
@@ -90,16 +90,16 @@ const char* DMI_Get_System_Vendor(void) {
   return buf;
 
 error:
-  Log_Error("Could not get system vendor. Failed to read " DMI_SysVendorFile ": %s", strerror(errno));
+  Log_Error("Could not get system vendor. Failed to read " DMI_SYS_VENDOR_FILE": %s", strerror(errno));
   exit(NBFC_EXIT_FAILURE);
 }
 
-const char* DMI_Get_Model_Name(void) {
+const char* DMI_GetModelName(void) {
   static char model_name[256];
 
-  const char* product = DMI_Get_System_Product();
-  const char* vendor  = DMI_Get_System_Vendor();
-  const char* vendor_alias = DMI_Find_Vendor_Alias(vendor);
+  const char* product = DMI_GetSystemProduct();
+  const char* vendor  = DMI_GetSystemVendor();
+  const char* vendor_alias = DMI_FindVendorAlias(vendor);
 
   if (vendor_alias)
     vendor = vendor_alias;
