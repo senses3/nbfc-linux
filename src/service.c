@@ -38,6 +38,7 @@ enum Service_Initialization {
 
 ModelConfig                        Service_ModelConfig = {0};
 ServiceConfig                      Service_ServiceConfig = {0};
+ServiceState                       Service_ServiceState = {0};
 array_of(FanTemperatureControl)    Service_Fans = {0};
 static enum Service_Initialization Service_State;
 
@@ -65,12 +66,13 @@ Error Service_Init(void) {
   }
 
   // Service state ============================================================
-  ServiceState_Init(); // we don't care if this fails
+  // (we don't care if this fails)
+  ServiceState_FromFile(&Service_ServiceState, NBFC_STATE_FILE);
 
   // Be backwards compatible
   if (ServiceConfig_IsSet_TargetFanSpeeds(&Service_ServiceConfig)) {
-    ServiceState_Set_TargetFanSpeeds(&service_state);
-    service_state.TargetFanSpeeds = Service_ServiceConfig.TargetFanSpeeds;
+    ServiceState_Set_TargetFanSpeeds(&Service_ServiceState);
+    Service_ServiceState.TargetFanSpeeds = Service_ServiceConfig.TargetFanSpeeds;
 
     ServiceConfig_UnSet_TargetFanSpeeds(&Service_ServiceConfig);
     Service_ServiceConfig.TargetFanSpeeds.data = NULL;
@@ -121,12 +123,12 @@ Error Service_Init(void) {
       goto error;
   }
 
-  for_enumerate_array(array_size_t, i, service_state.TargetFanSpeeds) {
+  for_enumerate_array(array_size_t, i, Service_ServiceState.TargetFanSpeeds) {
     if (i >= Service_Fans.size)
       continue;
 
-    if (service_state.TargetFanSpeeds.data[i] >= 0.0f) {
-      e = Fan_SetFixedSpeed(&Service_Fans.data[i].Fan, service_state.TargetFanSpeeds.data[i]);
+    if (Service_ServiceState.TargetFanSpeeds.data[i] >= 0.0f) {
+      e = Fan_SetFixedSpeed(&Service_Fans.data[i].Fan, Service_ServiceState.TargetFanSpeeds.data[i]);
       e_warn();
     }
     else
@@ -423,15 +425,15 @@ static bool IsAcpiCallUsed(void) {
 void Service_WriteTargetFanSpeedsToState(void) {
   const array_size_t fancount = Service_ModelConfig.FanConfigurations.size;
 
-  array_realloc(float, service_state.TargetFanSpeeds, fancount);
-  service_state.TargetFanSpeeds.size = fancount;
+  array_realloc(float, Service_ServiceState.TargetFanSpeeds, fancount);
+  Service_ServiceState.TargetFanSpeeds.size = fancount;
 
   for_enumerate_array(array_size_t, i, Service_Fans) {
     Fan* fan = &Service_Fans.data[i].Fan;
     if (fan->mode == Fan_ModeAuto)
-      service_state.TargetFanSpeeds.data[i] = -1;
+      Service_ServiceState.TargetFanSpeeds.data[i] = -1;
     else
-      service_state.TargetFanSpeeds.data[i] = Fan_GetRequestedSpeed(fan);
+      Service_ServiceState.TargetFanSpeeds.data[i] = Fan_GetRequestedSpeed(fan);
   }
 }
 
@@ -456,8 +458,8 @@ void Service_Cleanup(void) {
       ModelConfig_Free(&Service_ModelConfig);
       /* fall through */
     case Initialized_1_Service_Config:
-      ServiceState_Write();
-      ServiceState_Free();
+      ServiceState_Write(&Service_ServiceState, NBFC_STATE_FILE);
+      ServiceState_Free(&Service_ServiceState);
       ServiceConfig_Free(&Service_ServiceConfig);
       /* fall through */
     case Initialized_0_None:

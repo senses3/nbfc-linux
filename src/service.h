@@ -22,6 +22,7 @@ struct Service_Options {
 
 extern ServiceConfig   Service_ServiceConfig;
 extern ModelConfig     Service_ModelConfig;
+extern ServiceState    Service_ServiceState;
 extern array_of(FanTemperatureControl) Service_Fans;
 extern Service_Options options;
 
