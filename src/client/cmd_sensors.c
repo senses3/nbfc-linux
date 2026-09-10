@@ -94,19 +94,20 @@ static Error Sensors_IsValidSensor(const char* sensor) {
   }
 }
 
-static FanTemperatureSourceConfig* Sensors_GetFTSCByFanIndex(array_size_t fanIndex) {
-  for_each_array(FanTemperatureSourceConfig*, ftsc, service_config.FanTemperatureSources)
+static FanTemperatureSourceConfig* Sensors_GetFTSCByFanIndex(ServiceConfig* service_config, array_size_t fanIndex) {
+  for_each_array(FanTemperatureSourceConfig*, ftsc, service_config->FanTemperatureSources)
     if (ftsc->FanIndex == fanIndex)
       return ftsc;
 
-  const array_size_t idx = service_config.FanTemperatureSources.size;
-  array_realloc(FanTemperatureSourceConfig, service_config.FanTemperatureSources, (idx + 1));
-  service_config.FanTemperatureSources.size = (idx + 1);
-  return &service_config.FanTemperatureSources.data[idx];
+  const array_size_t idx = service_config->FanTemperatureSources.size;
+  array_realloc(FanTemperatureSourceConfig, service_config->FanTemperatureSources, (idx + 1));
+  service_config->FanTemperatureSources.size = (idx + 1);
+  return &service_config->FanTemperatureSources.data[idx];
 }
 
 static int Sensors_Set(void) {
   Error e;
+  ServiceConfig service_config = {0};
   ModelConfig model_config = {0};
 
   check_root();
@@ -117,7 +118,7 @@ static int Sensors_Set(void) {
   }
 
   FS_Sensors_Init();
-  Service_LoadAllConfigFiles(&model_config);
+  Service_LoadAllConfigFiles(&service_config, &model_config);
 
   if (Sensors_Options.fan >= model_config.FanConfigurations.size) {
     Log_Error("%s: No such fan: %zu", "-f|--fan", Sensors_Options.fan);
@@ -135,7 +136,7 @@ static int Sensors_Set(void) {
     }
   }
 
-  FanTemperatureSourceConfig* ftsc = Sensors_GetFTSCByFanIndex(Sensors_Options.fan);
+  FanTemperatureSourceConfig* ftsc = Sensors_GetFTSCByFanIndex(&service_config, Sensors_Options.fan);
 
   FanTemperatureSourceConfig_Set_FanIndex(ftsc);
   ftsc->FanIndex = Sensors_Options.fan;
@@ -157,16 +158,17 @@ static int Sensors_Set(void) {
     FanTemperatureSourceConfig_UnSet_TemperatureAlgorithmType(ftsc);
   }
 
-  e = ServiceConfig_Write(NBFC_SERVICE_CONFIG);
+  e = ServiceConfig_Write(&service_config, NBFC_SERVICE_CONFIG);
   e_die();
 
   return NBFC_EXIT_SUCCESS;
 }
 
 static int Sensors_Show(void) {
+  ServiceConfig service_config = {0};
   ModelConfig model_config = {0};
 
-  Service_LoadAllConfigFiles(&model_config);
+  Service_LoadAllConfigFiles(&service_config, &model_config);
 
   struct FanWithTrace {
     const char*              FanName;

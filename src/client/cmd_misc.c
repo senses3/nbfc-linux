@@ -53,11 +53,12 @@ static int GetModelName(void) {
 }
 
 static int CompleteFans(void) {
+  ServiceConfig service_config = {0};
   ModelConfig model_config = {0};
 
   close(STDERR_FILENO);
 
-  Service_LoadAllConfigFiles(&model_config);
+  Service_LoadAllConfigFiles(&service_config, &model_config);
 
   int idx = 0;
   for_each_array(const FanConfiguration*, fc, model_config.FanConfigurations)

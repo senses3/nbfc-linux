@@ -126,6 +126,7 @@ int Set_Or_Apply(void) {
   check_root();
   char* config;
   array_of(ConfigFile) files = List_All_Configs();
+  ServiceConfig service_config = {0};
 
   // "auto" ===================================================================
   if (! str_cmp_ignorecase(Config_Options.config, "auto")) {
@@ -164,12 +165,12 @@ int Set_Or_Apply(void) {
     }
   }
 
-  ServiceConfig_Load();
+  ServiceConfig_Load(&service_config);
 
   service_config.SelectedConfigId = config;
   ServiceConfig_Set_SelectedConfigId(&service_config);
 
-  Error e = ServiceConfig_Write(NBFC_SERVICE_CONFIG);
+  Error e = ServiceConfig_Write(&service_config, NBFC_SERVICE_CONFIG);
   Mem_Free(config);
 
   if (e) {

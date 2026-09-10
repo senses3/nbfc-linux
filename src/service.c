@@ -36,8 +36,9 @@ enum Service_Initialization {
   Initialized_6_Temperature_Filter,
 };
 
-ModelConfig              Service_ModelConfig;
-array_of(FanTemperatureControl) Service_Fans;
+ModelConfig                        Service_ModelConfig = {0};
+ServiceConfig                      Service_ServiceConfig = {0};
+array_of(FanTemperatureControl)    Service_Fans = {0};
 static enum Service_Initialization Service_State;
 
 static Error ApplyRegisterWriteConfigurations(bool);
@@ -58,7 +59,7 @@ Error Service_Init(void) {
   Service_State = Initialized_0_None;
 
   // Service config ===========================================================
-  e = ServiceConfig_Init(options.service_config);
+  e = ServiceConfig_FromFile(&Service_ServiceConfig, options.service_config);
   if (e) {
     goto error;
   }
@@ -67,21 +68,21 @@ Error Service_Init(void) {
   ServiceState_Init(); // we don't care if this fails
 
   // Be backwards compatible
-  if (ServiceConfig_IsSet_TargetFanSpeeds(&service_config)) {
+  if (ServiceConfig_IsSet_TargetFanSpeeds(&Service_ServiceConfig)) {
     ServiceState_Set_TargetFanSpeeds(&service_state);
-    service_state.TargetFanSpeeds = service_config.TargetFanSpeeds;
+    service_state.TargetFanSpeeds = Service_ServiceConfig.TargetFanSpeeds;
 
-    ServiceConfig_UnSet_TargetFanSpeeds(&service_config);
-    service_config.TargetFanSpeeds.data = NULL;
-    service_config.TargetFanSpeeds.size = 0;
-    ServiceConfig_Write(options.service_config);
+    ServiceConfig_UnSet_TargetFanSpeeds(&Service_ServiceConfig);
+    Service_ServiceConfig.TargetFanSpeeds.data = NULL;
+    Service_ServiceConfig.TargetFanSpeeds.size = 0;
+    ServiceConfig_Write(&Service_ServiceConfig, options.service_config);
   }
 
   Service_State = Initialized_1_Service_Config;
 
   // Model config =============================================================
-  Log_Info("Using \"%s\" as model config", service_config.SelectedConfigId);
-  e = ModelConfig_FindAndLoad(&Service_ModelConfig, path, service_config.SelectedConfigId);
+  Log_Info("Using \"%s\" as model config", Service_ServiceConfig.SelectedConfigId);
+  e = ModelConfig_FindAndLoad(&Service_ModelConfig, path, Service_ServiceConfig.SelectedConfigId);
   if (e) {
     e = err_chain_string(e, path);
     goto error;
@@ -137,8 +138,8 @@ Error Service_Init(void) {
     // --embedded-controller given
     ec = EC_By_EmbeddedControllerType(options.embedded_controller_type);;
   }
-  else if (ServiceConfig_IsSet_EmbeddedControllerType(&service_config)) {
-    ec = EC_By_EmbeddedControllerType(service_config.EmbeddedControllerType);
+  else if (ServiceConfig_IsSet_EmbeddedControllerType(&Service_ServiceConfig)) {
+    ec = EC_By_EmbeddedControllerType(Service_ServiceConfig.EmbeddedControllerType);
   }
   else {
     e = EC_FindWorking(&ec);
@@ -180,7 +181,7 @@ Error Service_Init(void) {
   }
 
   // Initialize fans with sensors and temperature filter ======================
-  e = FanTemperatureControl_Init(&Service_Fans, &service_config, &Service_ModelConfig);
+  e = FanTemperatureControl_Init(&Service_Fans, &Service_ServiceConfig, &Service_ModelConfig);
   if (e)
     goto error;
   Service_State = Initialized_6_Temperature_Filter;
@@ -457,7 +458,7 @@ void Service_Cleanup(void) {
     case Initialized_1_Service_Config:
       ServiceState_Write();
       ServiceState_Free();
-      ServiceConfig_Free(&service_config);
+      ServiceConfig_Free(&Service_ServiceConfig);
       /* fall through */
     case Initialized_0_None:
       break;

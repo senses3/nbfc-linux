@@ -80,9 +80,9 @@ error:
   return e;
 }
 
-void ServiceConfig_Load(void) {
+void ServiceConfig_Load(ServiceConfig* service_config) {
   if (! File_Exists(NBFC_SERVICE_CONFIG)) {
-    memset(&service_config, 0, sizeof(service_config)); // Clear values
+    memset(service_config, 0, sizeof(ServiceConfig)); // Clear values
     return;
   }
 
@@ -92,7 +92,7 @@ void ServiceConfig_Load(void) {
   if (e)
     goto error;
 
-  e = ServiceConfig_FromJson(&service_config, js);
+  e = ServiceConfig_FromJson(service_config, js);
   nx_json_free(js);
 
   if (e) {
@@ -152,19 +152,19 @@ error:
   return e;
 }
 
-void Service_LoadAllConfigFiles(ModelConfig* model_config) {
+void Service_LoadAllConfigFiles(ServiceConfig* service_config, ModelConfig* model_config) {
   Error e;
   Trace trace = {0};
   char path[PATH_MAX];
 
-  e = ServiceConfig_Init(NBFC_SERVICE_CONFIG);
+  e = ServiceConfig_FromFile(service_config, NBFC_SERVICE_CONFIG);
   if (e) {
     Log_Error("%s", err_print_all(e));
     Log_Error("This command needs a valid and configured `%s`", NBFC_SERVICE_CONFIG);
     exit(NBFC_EXIT_FAILURE);
   }
 
-  e = ModelConfig_FindAndLoad(model_config, path, service_config.SelectedConfigId);
+  e = ModelConfig_FindAndLoad(model_config, path, service_config->SelectedConfigId);
   if (e) {
     Log_Error("%s", err_print_all(e));
     Log_Error("This command needs a valid model configuration (%s)", path);

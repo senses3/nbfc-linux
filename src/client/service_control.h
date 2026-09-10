@@ -15,7 +15,7 @@ int   Service_Restart(bool);
 
 Error Client_Communicate(const nx_json*, char**, const nx_json**);
 Error ServiceInfo_TryLoad(ServiceInfo*);
-void  ServiceConfig_Load(void);
-void  Service_LoadAllConfigFiles(ModelConfig*);
+void  ServiceConfig_Load(ServiceConfig*);
+void  Service_LoadAllConfigFiles(ServiceConfig*, ModelConfig*);
 
 #endif
