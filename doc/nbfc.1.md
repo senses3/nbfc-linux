@@ -87,10 +87,6 @@ This program is used to control the NoteBook FanControl service.
 >
 > > Set a config.
 >
-> **-a**, **\--apply** *CONFIG*
->
-> > Set a config and start the service.
->
 > If *CONFIG* is **auto**, the service will attempt to automatically
 > select a matching configuration.
 >

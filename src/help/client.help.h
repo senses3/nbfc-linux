@@ -50,17 +50,14 @@
  ""
 
 #define CLIENT_CONFIG_HELP_TEXT                                                \
- "Usage: nbfc config [-h] (-l | -s CONFIG | -a CONFIG | -r)\n"                 \
+ "Usage: nbfc config [-h] (-l | -r | -s CONFIG)\n"                             \
  "\n"                                                                          \
  "Set or list configurations for the NBFC service.\n"                          \
  "\n"                                                                          \
  "Optional arguments:\n"                                                       \
  "  -h, --help            Show this help message and exit\n"                   \
  "  -l, --list            List all available configs\n"                        \
- "  -s CONFIG, --set CONFIG\n"                                                 \
- "                        Set a config\n"                                      \
- "  -a CONFIG, --apply CONFIG\n"                                               \
- "                        Set a config and start the service\n"                \
+ "  -s, --set CONFIG      Set a configuration\n"                               \
  "  -r, --recommend       List configs with a similar notebook model name\n"   \
  "\n"                                                                          \
  "If CONFIG is \"auto\", the service will attempt to automatically select\n"   \

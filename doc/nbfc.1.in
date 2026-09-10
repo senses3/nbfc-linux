@@ -111,12 +111,6 @@ List configs with a similar notebook model name.
 Set a config.
 .RE
 
-.BR \-a ", " \-\-apply
-.I CONFIG
-.RS
-Set a config and start the service.
-.RE
-
 If
 .I CONFIG
 is

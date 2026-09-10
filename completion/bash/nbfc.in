@@ -127,7 +127,6 @@ _nbfc__parse_commandline() {
       case "$2" in
         -l|--list) VAR=OPT_list; ARGS=0; return;;
         -s|--set) VAR=OPT_set; ARGS=1; return;;
-        -a|--apply) VAR=OPT_apply; ARGS=1; return;;
         -r|--recommend) VAR=OPT_recommend; ARGS=0; return;;
       esac
     esac
@@ -247,7 +246,7 @@ _nbfc() {
 
   local END_OF_OPTIONS POSITIONALS
   local -a OPT_help OPT_version OPT_read_only OPT_all OPT_service OPT_fan
-  local -a OPT_watch OPT_list OPT_set OPT_apply OPT_recommend OPT_auto OPT_speed
+  local -a OPT_watch OPT_list OPT_set OPT_recommend OPT_auto OPT_speed
   local -a OPT_algorithm OPT_sensor OPT_force OPT_parallel OPT_quiet
   local -a OPT_full_help OPT_dsdt OPT_dsdt_dir OPT_min_score OPT_input OPT_json
   local -a OPT_print_rules OPT_rules OPT_no_download OPT_unverified OPT_bad
@@ -371,7 +370,7 @@ _nbfc_config() {
     local opt="$1" cur="$2" ret=0
 
     case "$opt" in
-      -s|--set|-a|--apply)
+      -s|--set)
         builtin pushd /@DATADIR@/nbfc/configs &>/dev/null && {
           _filedir
           builtin popd >/dev/null
@@ -393,7 +392,7 @@ _nbfc_config() {
 
   case "$prev" in
     --*) __complete_option "$prev" "$cur" && return 0;;
-    -*([lrh])[sa])
+    -*([lrh])[s])
          __complete_option "-${prev: -1}" "$cur" && return 0;;
   esac
 
@@ -401,7 +400,7 @@ _nbfc_config() {
     --*=*)
       __complete_option "${cur%%=*}" "${cur#*=}" && return 0;;
     --*);;
-    -*([lrh])[sa]*)
+    -*([lrh])[s]*)
       local i
       for ((i=2; i <= ${#cur}; ++i)); do
         local pre="${cur:0:$i}" value="${cur:$i}"
@@ -414,7 +413,7 @@ _nbfc_config() {
 
   if (( ! END_OF_OPTIONS )) && [[ "$cur" = -* ]]; then
     local -a opts
-    (( ! ${#OPT_apply[@]} && ! ${#OPT_list[@]} && ! ${#OPT_recommend[@]} && ! ${#OPT_set[@]} )) && opts+=(-l --list -s --set= -a --apply= -r --recommend)
+    (( ! ${#OPT_list[@]} && ! ${#OPT_recommend[@]} && ! ${#OPT_set[@]} )) && opts+=(-l --list -s --set= -r --recommend)
     COMPREPLY+=($(compgen -W "${opts[*]}" -- "$cur"))
     [[ ${COMPREPLY-} == *= ]] && compopt -o nospace
     return 1

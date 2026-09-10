@@ -247,10 +247,9 @@ _nbfc_status() {
 
 _nbfc_config() {
   local -a args=(
-    '(--apply --recommend --set -a -r -s --list -l)'{-l,--list}'[List all available configs (default)]'
-    '(--apply --list --recommend -a -l -r --set -s)'{-s+,--set=}'[Set a config]':config:'{_nbfc_config__-s}'
-    '(--list --recommend --set -l -r -s --apply -a)'{-a+,--apply=}'[Set a config and enable fan control]':config:'{_nbfc_config__-s}'
-    '(--apply --list --set -a -l -s --recommend -r)'{-r,--recommend}'[List configs which may work for your device]'
+    '(--recommend --set -r -s --list -l)'{-l,--list}'[List all available configs (default)]'
+    '(--list --recommend -l -r --set -s)'{-s+,--set=}'[Set a config]':config:'{_nbfc_config__-s}'
+    '(--list --set -l -s --recommend -r)'{-r,--recommend}'[List configs with names similar to your notebook]'
     '(--help -h)'{-h,--help}'[show this help message and exit]'
     '(--version)'--version"[show program's version number and exit]"
     1:command1:_nbfc__command

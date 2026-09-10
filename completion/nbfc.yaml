@@ -62,18 +62,8 @@ options:
       ["file"]
     ]]
 
-  - option_strings: ["-a", "--apply"]
-    metavar: "config"
-    help: "Set a config and enable fan control"
-    groups: ["group1"]
-    complete: ['combine', [
-      ["file", {"directory": "/@DATADIR@/nbfc/configs"}],
-      ["file", {"directory": "/var/lib/nbfc/configs"}],
-      ["file"]
-    ]]
-
   - option_strings: ["-r", "--recommend"]
-    help: "List configs which may work for your device"
+    help: "List configs with names similar to your notebook"
     groups: ["group1"]
 ---
 prog: "nbfc set"

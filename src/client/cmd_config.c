@@ -13,7 +13,6 @@
 
 #include "dmi.h"
 #include "check_root.h"
-#include "service_control.h"
 #include "config_files.h"
 #include "client_global.h"
 
@@ -44,6 +43,28 @@
   "The recommended way to find configurations that are safe on your system\n"  \
   "is to run `sudo nbfc rate-config -a`.\n"                                    \
   "\n"                                                                         \
+  ""
+
+#define CONFIG_APPLY_NOTICE \
+  "The -a|--apply option has been removed.\n"                                  \
+  "\n"                                                                         \
+  "For setting up the service, use the following commands:\n"                  \
+  "  $ sudo nbfc config --set \"CONFIG\"\n"                                    \
+  "  $ sudo nbfc restart --read-only\n"                                        \
+  "\n"                                                                         \
+  "If the configuration works in read-only mode, you can restart the service\n"\
+  "in write-mode:\n"                                                           \
+  "  $ sudo nbfc restart\n"                                                    \
+  ""
+
+#define CONFIG_SET_NOTICE \
+  "Configuration has been set successfully.\n"                                 \
+  "\n"                                                                         \
+  "To test the configuration use:\n"                                           \
+  "  $ sudo nbfc restart --read-only\n"                                        \
+  "\n"                                                                         \
+  "Once you verified the configuration, start the service in write-mode:\n"    \
+  "  $ sudo nbfc restart\n"                                                    \
   ""
 
 enum Config_Action {
@@ -79,7 +100,7 @@ void Set_Config_Action(enum Config_Action action) {
   Config_Options.action = action;
 }
 
-int List(void) {
+static int Config_List(void) {
   array_of(ConfigFile) files = List_All_Configs();
 
   qsort(files.data, files.size, sizeof(ConfigFile), ConfigFile_CompareByName);
@@ -91,7 +112,7 @@ int List(void) {
   return NBFC_EXIT_SUCCESS;
 }
 
-int Recommend(void) {
+static int Config_Recommend(void) {
   if (isatty(STDOUT_FILENO) && !Config_Options.yes) {
     fprintf(stderr, "%s", RECOMMENDED_WARNING);
     return NBFC_EXIT_FAILURE;
@@ -122,7 +143,7 @@ int Recommend(void) {
   return NBFC_EXIT_SUCCESS;
 }
 
-int Set_Or_Apply(void) {
+static int Config_Set(void) {
   check_root();
   char* config;
   array_of(ConfigFile) files = List_All_Configs();
@@ -178,18 +199,21 @@ int Set_Or_Apply(void) {
     return NBFC_EXIT_FAILURE;
   }
 
-  if (Config_Options.action == Config_Action_Apply)
-    return Service_Restart(false);
-
+  printf("%s\n", CONFIG_SET_NOTICE);
   return NBFC_EXIT_SUCCESS;
+}
+
+static int Config_Apply(void) {
+  printf("%s\n", CONFIG_APPLY_NOTICE);
+  return NBFC_EXIT_FAILURE;
 }
 
 int Config(void) {
   switch (Config_Options.action) {
-  case Config_Action_List:      return List();
-  case Config_Action_Recommend: return Recommend();
-  case Config_Action_Set:       return Set_Or_Apply();
-  case Config_Action_Apply:     return Set_Or_Apply();
+  case Config_Action_List:      return Config_List();
+  case Config_Action_Recommend: return Config_Recommend();
+  case Config_Action_Set:       return Config_Set();
+  case Config_Action_Apply:     return Config_Apply();
   default:
     printf("%s", CLIENT_CONFIG_HELP_TEXT);
     return NBFC_EXIT_CMDLINE;
