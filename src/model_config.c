@@ -348,12 +348,12 @@ define_array_of_T_FromJson(FanTemperatureSourceConfig)
 // ============================================================================
 
 static const TemperatureThreshold _Config_DefaultTemperatureThresholds[] = {
-  {60,  0,   0, 255},
-  {63, 48,  10, 255},
-  {66, 55,  20, 255},
-  {68, 59,  50, 255},
-  {71, 63,  70, 255},
-  {75, 67, 100, 255},
+  {60,  0,   0, {true, true, true}},
+  {63, 48,  10, {true, true, true}},
+  {66, 55,  20, {true, true, true}},
+  {68, 59,  50, {true, true, true}},
+  {71, 63,  70, {true, true, true}},
+  {75, 67, 100, {true, true, true}},
 };
 
 static const array_of_const(TemperatureThreshold) Config_DefaultTemperatureThresholds = {
@@ -362,12 +362,12 @@ static const array_of_const(TemperatureThreshold) Config_DefaultTemperatureThres
 };
 
 static const TemperatureThreshold _Config_DefaultLegacyTemperatureThresholds[] = {
-  {0,   0,   0, 255},
-  {60, 48,  10, 255},
-  {63, 55,  20, 255},
-  {66, 59,  50, 255},
-  {68, 63,  70, 255},
-  {71, 67, 100, 255},
+  {0,   0,   0, {true, true, true}},
+  {60, 48,  10, {true, true, true}},
+  {63, 55,  20, {true, true, true}},
+  {66, 59,  50, {true, true, true}},
+  {68, 63,  70, {true, true, true}},
+  {71, 67, 100, {true, true, true}},
 };
 
 static const array_of_const(TemperatureThreshold) Config_DefaultLegacyTemperatureThresholds = {
@@ -490,13 +490,13 @@ Error TemperatureThresholds_Validate(
 }
 
 static Error RegisterWriteConfiguration_Validate(const RegisterWriteConfiguration* r) {
-  const bool AcpiMethod                  = RegisterWriteConfiguration_IsSet_AcpiMethod(r);
-  const bool ResetAcpiMethod             = RegisterWriteConfiguration_IsSet_ResetAcpiMethod(r);
-  const bool LuaCode                     = RegisterWriteConfiguration_IsSet_LuaCode(r);
-  const bool ResetLuaCode                = RegisterWriteConfiguration_IsSet_ResetLuaCode(r);
-  const bool Register                    = RegisterWriteConfiguration_IsSet_Register(r);
-  const bool Value                       = RegisterWriteConfiguration_IsSet_Value(r);
-  const bool ResetValue                  = RegisterWriteConfiguration_IsSet_ResetValue(r);
+  const bool AcpiMethod                  = r->isset.AcpiMethod;
+  const bool ResetAcpiMethod             = r->isset.ResetAcpiMethod;
+  const bool LuaCode                     = r->isset.LuaCode;
+  const bool ResetLuaCode                = r->isset.ResetLuaCode;
+  const bool Register                    = r->isset.Register;
+  const bool Value                       = r->isset.Value;
+  const bool ResetValue                  = r->isset.ResetValue;
   const bool ResetRequired               = r->ResetRequired;
   const RegisterWriteMode WriteMode      = r->WriteMode;
   const RegisterWriteMode ResetWriteMode = r->ResetWriteMode;
@@ -640,9 +640,9 @@ Error ModelConfig_Validate(Trace* trace, ModelConfig* c) {
     // "ResetAcpiMethod" and "ResetLuaCode" is set
     if (f->ResetRequired) {
       const int reset_group = (
-        FanConfiguration_IsSet_FanSpeedResetValue(f) +
-        FanConfiguration_IsSet_ResetAcpiMethod(f) +
-        FanConfiguration_IsSet_ResetLuaCode(f)
+        f->isset.FanSpeedResetValue +
+        f->isset.ResetAcpiMethod +
+        f->isset.ResetLuaCode
       );
 
       if (reset_group == 0) {
@@ -658,18 +658,18 @@ Error ModelConfig_Validate(Trace* trace, ModelConfig* c) {
       /* This is actually the right behaviour, but too many old config files
        * have FanSpeedResetValue set even if ResetRequired is false.
        *
-      if (FanConfiguration_IsSet_FanSpeedResetValue(f)) {
+      if (f->isset.FanSpeedResetValue) {
         e = err_string("FanSpeedResetValue: Cannot be used with ResetRequired == false");
         goto err;
       }
        */
 
-      if (FanConfiguration_IsSet_ResetAcpiMethod(f)) {
+      if (f->isset.ResetAcpiMethod) {
         e = err_string("ResetAcpiMethod: Cannot be used with ResetRequired == false");
         goto err;
       }
 
-      if (FanConfiguration_IsSet_ResetLuaCode(f)) {
+      if (f->isset.ResetLuaCode) {
         e = err_string("ResetLuaCode: Cannot be used with ResetRequired == false");
         goto err;
       }
@@ -677,9 +677,9 @@ Error ModelConfig_Validate(Trace* trace, ModelConfig* c) {
 
     // Ensure that one (and only one) of "WriteRegister", "WriteAcpiMethod" and "WriteLuaCode" is set
     const int write_group = (
-      FanConfiguration_IsSet_WriteRegister(f) +
-      FanConfiguration_IsSet_WriteAcpiMethod(f) +
-      FanConfiguration_IsSet_WriteLuaCode(f)
+      f->isset.WriteRegister +
+      f->isset.WriteAcpiMethod +
+      f->isset.WriteLuaCode
     );
 
     if (write_group == 0) {
@@ -693,9 +693,9 @@ Error ModelConfig_Validate(Trace* trace, ModelConfig* c) {
 
     // Ensure that one (and only one) of "ReadRegister", "ReadAcpiMethod" and "ReadLuaCode" is set
     const int read_group = (
-      FanConfiguration_IsSet_ReadRegister(f) +
-      FanConfiguration_IsSet_ReadAcpiMethod(f) +
-      FanConfiguration_IsSet_ReadLuaCode(f)
+      f->isset.ReadRegister +
+      f->isset.ReadAcpiMethod +
+      f->isset.ReadLuaCode
     );
 
     if (read_group == 0) {
@@ -713,12 +713,12 @@ Error ModelConfig_Validate(Trace* trace, ModelConfig* c) {
     }
 
     if (f->IndependentReadMinMaxValues) {
-      if (! FanConfiguration_IsSet_MinSpeedValueRead(f)) {
+      if (! f->isset.MinSpeedValueRead) {
         e = err_stringf("%s: %s", "MinSpeedValueRead", "Missing option");
         goto err;
       }
 
-      if (! FanConfiguration_IsSet_MaxSpeedValueRead(f)) {
+      if (! f->isset.MaxSpeedValueRead) {
         e = err_stringf("%s: %s", "MaxSpeedValueRead", "Missing option");
         goto err;
       }

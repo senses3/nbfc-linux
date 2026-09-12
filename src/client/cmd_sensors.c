@@ -138,24 +138,24 @@ static int Sensors_Set(void) {
 
   FanTemperatureSourceConfig* ftsc = Sensors_GetFTSCByFanIndex(&service_config, Sensors_Options.fan);
 
-  FanTemperatureSourceConfig_Set_FanIndex(ftsc);
+  ftsc->isset.FanIndex = true;
   ftsc->FanIndex = Sensors_Options.fan;
 
   if (Sensors_Options.sensors.size) {
-    FanTemperatureSourceConfig_Set_Sensors(ftsc);
+    ftsc->isset.Sensors = true;
     ftsc->Sensors = Sensors_Options.sensors;
   }
   else {
-    FanTemperatureSourceConfig_UnSet_Sensors(ftsc);
+    ftsc->isset.Sensors = false;
     ftsc->Sensors.size = 0;
   }
 
   if (Sensors_Options.algorithm != TemperatureAlgorithmType_Unset) {
-    FanTemperatureSourceConfig_Set_TemperatureAlgorithmType(ftsc);
+    ftsc->isset.TemperatureAlgorithmType = true;
     ftsc->TemperatureAlgorithmType = Sensors_Options.algorithm;
   }
   else {
-    FanTemperatureSourceConfig_UnSet_TemperatureAlgorithmType(ftsc);
+    ftsc->isset.TemperatureAlgorithmType = false;
   }
 
   e = ServiceConfig_Write(&service_config, NBFC_SERVICE_CONFIG);
@@ -203,12 +203,12 @@ static int Sensors_Show(void) {
 
     fans[i].FanName = fc->FanDisplayName;
 
-    if (FanConfiguration_IsSet_Sensors(fc)) {
+    if (fc->isset.Sensors) {
       fans[i].Sensors = fc->Sensors;
       fans[i].Sensors_Source = "model config";
     }
 
-    if (FanConfiguration_IsSet_TemperatureAlgorithmType(fc)) {
+    if (fc->isset.TemperatureAlgorithmType) {
       fans[i].TemperatureAlgorithmType = fc->TemperatureAlgorithmType;
       fans[i].TemperatureAlgorithmType_Source = "model config";
     }
@@ -222,12 +222,12 @@ static int Sensors_Show(void) {
     if (ftsc->FanIndex >= model_config.FanConfigurations.size)
       continue;
 
-    if (FanTemperatureSourceConfig_IsSet_Sensors(ftsc)) {
+    if (ftsc->isset.Sensors) {
       fans[ftsc->FanIndex].Sensors = ftsc->Sensors;
       fans[ftsc->FanIndex].Sensors_Source = "service config";
     }
 
-    if (FanTemperatureSourceConfig_IsSet_TemperatureAlgorithmType(ftsc)) {
+    if (ftsc->isset.TemperatureAlgorithmType) {
       fans[ftsc->FanIndex].TemperatureAlgorithmType = ftsc->TemperatureAlgorithmType;
       fans[ftsc->FanIndex].TemperatureAlgorithmType_Source = "service config";
     }

@@ -189,7 +189,7 @@ static int Config_Set(void) {
   ServiceConfig_Load(&service_config);
 
   service_config.SelectedConfigId = config;
-  ServiceConfig_Set_SelectedConfigId(&service_config);
+  service_config.isset.SelectedConfigId = true;
 
   Error e = ServiceConfig_Write(&service_config, NBFC_SERVICE_CONFIG);
   Mem_Free(config);

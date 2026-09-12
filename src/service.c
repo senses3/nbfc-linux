@@ -65,11 +65,11 @@ Error Service_Init(void) {
   ServiceState_FromFile(&Service_ServiceState, NBFC_STATE_FILE);
 
   // Be backwards compatible
-  if (ServiceConfig_IsSet_TargetFanSpeeds(&Service_ServiceConfig)) {
-    ServiceState_Set_TargetFanSpeeds(&Service_ServiceState);
+  if (Service_ServiceConfig.isset.TargetFanSpeeds) {
+    Service_ServiceState.isset.TargetFanSpeeds = true;
     Service_ServiceState.TargetFanSpeeds = Service_ServiceConfig.TargetFanSpeeds;
 
-    ServiceConfig_UnSet_TargetFanSpeeds(&Service_ServiceConfig);
+    Service_ServiceConfig.isset.TargetFanSpeeds = false;
     Service_ServiceConfig.TargetFanSpeeds.data = NULL;
     Service_ServiceConfig.TargetFanSpeeds.size = 0;
     ServiceConfig_Write(&Service_ServiceConfig, options.service_config);
@@ -135,7 +135,7 @@ Error Service_Init(void) {
     // --embedded-controller given
     ec = EC_By_EmbeddedControllerType(options.embedded_controller_type);;
   }
-  else if (ServiceConfig_IsSet_EmbeddedControllerType(&Service_ServiceConfig)) {
+  else if (Service_ServiceConfig.isset.EmbeddedControllerType) {
     ec = EC_By_EmbeddedControllerType(Service_ServiceConfig.EmbeddedControllerType);
   }
   else {
@@ -260,13 +260,13 @@ static void ResetEC(void) {
 
 static bool IsAcpiCallUsed(void) {
   for_each_array(FanConfiguration*, fc, Service_ModelConfig.FanConfigurations) {
-    if (FanConfiguration_IsSet_WriteAcpiMethod(fc))
+    if (fc->isset.WriteAcpiMethod)
       return true;
 
-    if (FanConfiguration_IsSet_ReadAcpiMethod(fc))
+    if (fc->isset.ReadAcpiMethod)
       return true;
 
-    if (FanConfiguration_IsSet_ResetAcpiMethod(fc))
+    if (fc->isset.ResetAcpiMethod)
       return true;
   }
 

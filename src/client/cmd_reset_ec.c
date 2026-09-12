@@ -45,7 +45,7 @@ int ResetEc(void) {
   // ==========================================================================
   // Open embedded controller
   // ==========================================================================
-  if (ServiceConfig_IsSet_EmbeddedControllerType(&service_config)) {
+  if (service_config.isset.EmbeddedControllerType) {
     ec = EC_By_EmbeddedControllerType(service_config.EmbeddedControllerType);
   }
   else {

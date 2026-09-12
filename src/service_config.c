@@ -84,10 +84,10 @@ Error ServiceConfig_Write(const ServiceConfig* service_config, const char* file)
   nx_json root = {0};
   nx_json* o = create_json_object(NULL, &root);
 
-  if (ServiceConfig_IsSet_SelectedConfigId(service_config))
+  if (service_config->isset.SelectedConfigId)
     create_json_string("SelectedConfigId", o, service_config->SelectedConfigId);
 
-  if (ServiceConfig_IsSet_EmbeddedControllerType(service_config))
+  if (service_config->isset.EmbeddedControllerType)
     create_json_string("EmbeddedControllerType", o, EmbeddedControllerType_ToString(service_config->EmbeddedControllerType));
 
 #if 0
@@ -107,7 +107,7 @@ Error ServiceConfig_Write(const ServiceConfig* service_config, const char* file)
 
       create_json_integer("FanIndex", fan_temperature_source, ftsc->FanIndex);
 
-      if (FanTemperatureSourceConfig_IsSet_TemperatureAlgorithmType(ftsc))
+      if (ftsc->isset.TemperatureAlgorithmType)
         create_json_string("TemperatureAlgorithmType", fan_temperature_source, TemperatureAlgorithmType_ToString(ftsc->TemperatureAlgorithmType));
 
       if (ftsc->Sensors.size) {

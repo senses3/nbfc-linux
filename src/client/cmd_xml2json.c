@@ -56,7 +56,7 @@ int Xml2Json(void) {
 
   // Set LegacyTemperatureThresholdsBehaviour to true
   model_config.LegacyTemperatureThresholdsBehaviour = true;
-  ModelConfig_Set_LegacyTemperatureThresholdsBehaviour(&model_config);
+  model_config.isset.LegacyTemperatureThresholdsBehaviour = true;
 
   // Convert ModelConfig back to JSON and print it
   nx_json root = {0};

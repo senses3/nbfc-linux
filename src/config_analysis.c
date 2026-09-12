@@ -243,7 +243,7 @@ Error ConfigAnalysis_AnalyzeFanConfiguration(
   uint64_t dummy;
 
   // Read operations
-  if (FanConfiguration_IsSet_ReadRegister(fan_config)) {
+  if (fan_config->isset.ReadRegister) {
     e = ConfigAnalysis_PushRegister(
       fan_config->ReadRegister,
       RegisterType_FanReadRegister,
@@ -251,18 +251,18 @@ Error ConfigAnalysis_AnalyzeFanConfiguration(
     if (e) return e;
   }
 
-  if (FanConfiguration_IsSet_ReadAcpiMethod(fan_config)) {
+  if (fan_config->isset.ReadAcpiMethod) {
     e = ConfigAnalysis_PushMethod(fan_config->ReadAcpiMethod, false);
     if (e) return e;
   }
 
-  if (FanConfiguration_IsSet_ReadLuaCode(fan_config)) {
+  if (fan_config->isset.ReadLuaCode) {
     e = Lua_Call(fan_config->ReadLuaCode.function, 0, &dummy);
     if (e) return e;
   }
 
   // Write operations
-  if (FanConfiguration_IsSet_WriteRegister(fan_config)) {
+  if (fan_config->isset.WriteRegister) {
     e = ConfigAnalysis_PushRegister(
       fan_config->WriteRegister,
       RegisterType_FanWriteRegister,
@@ -270,12 +270,12 @@ Error ConfigAnalysis_AnalyzeFanConfiguration(
     if (e) return e;
   }
 
-  if (FanConfiguration_IsSet_WriteAcpiMethod(fan_config)) {
+  if (fan_config->isset.WriteAcpiMethod) {
     e = ConfigAnalysis_PushMethod(fan_config->WriteAcpiMethod, false);
     if (e) return e;
   }
 
-  if (FanConfiguration_IsSet_WriteLuaCode(fan_config)) {
+  if (fan_config->isset.WriteLuaCode) {
     if (fan_config->MinSpeedValue < fan_config->MaxSpeedValue) {
       for (uint64_t i = fan_config->MinSpeedValue; i <= fan_config->MaxSpeedValue; ++i) {
         e = Lua_Call(fan_config->WriteLuaCode.function, i, &dummy);
@@ -291,12 +291,12 @@ Error ConfigAnalysis_AnalyzeFanConfiguration(
   }
 
   // Reset operations
-  if (FanConfiguration_IsSet_ResetAcpiMethod(fan_config)) {
+  if (fan_config->isset.ResetAcpiMethod) {
     e = ConfigAnalysis_PushMethod(fan_config->ResetAcpiMethod, false);
     if (e) return e;
   }
 
-  if (FanConfiguration_IsSet_ResetLuaCode(fan_config)) {
+  if (fan_config->isset.ResetLuaCode) {
     e = Lua_Call(fan_config->ResetLuaCode.function, 0, &dummy);
     if (e) return e;
   }
@@ -322,29 +322,29 @@ Error ConfigAnalysis_AnalyzeModelConfig(
   ConfigAnalysis_InRegisterWriteConfiguration = true;
   for_each_array(RegisterWriteConfiguration*, rw_config, model_config->RegisterWriteConfigurations) {
     // Set operations
-    if (RegisterWriteConfiguration_IsSet_Register(rw_config)) {
+    if (rw_config->isset.Register) {
       e = ConfigAnalysis_PushRegister(rw_config->Register, RegisterType_RegisterWriteConfigurationRegister, false);
       if (e) return e;
     }
 
-    if (RegisterWriteConfiguration_IsSet_AcpiMethod(rw_config)) {
+    if (rw_config->isset.AcpiMethod) {
       e = ConfigAnalysis_PushMethod(rw_config->AcpiMethod, false);
       if (e) return e;
     }
 
-    if (RegisterWriteConfiguration_IsSet_LuaCode(rw_config)) {
+    if (rw_config->isset.LuaCode) {
       uint64_t dummy;
       e = Lua_Call(rw_config->LuaCode.function, 0, &dummy);
       if (e) return e;
     }
 
     // Reset operations
-    if (RegisterWriteConfiguration_IsSet_ResetAcpiMethod(rw_config)) {
+    if (rw_config->isset.ResetAcpiMethod) {
       e = ConfigAnalysis_PushMethod(rw_config->ResetAcpiMethod, false);
       if (e) return e;
     }
 
-    if (RegisterWriteConfiguration_IsSet_ResetLuaCode(rw_config)) {
+    if (rw_config->isset.ResetLuaCode) {
       uint64_t dummy;
       e = Lua_Call(rw_config->ResetLuaCode.function, 0, &dummy);
       if (e) return e;

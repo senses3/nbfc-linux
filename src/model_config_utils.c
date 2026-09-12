@@ -21,47 +21,47 @@ static bool FanConfiguration_IsSimilar(
   const FanConfiguration* b
 ) {
   const bool same_fields =
-    (FanConfiguration_IsSet_ReadRegister(a) == FanConfiguration_IsSet_ReadRegister(b)) &&
-    (FanConfiguration_IsSet_WriteRegister(a) == FanConfiguration_IsSet_WriteRegister(b)) &&
-    (FanConfiguration_IsSet_ReadAcpiMethod(a) == FanConfiguration_IsSet_ReadAcpiMethod(b)) &&
-    (FanConfiguration_IsSet_WriteAcpiMethod(a) == FanConfiguration_IsSet_WriteAcpiMethod(b)) &&
-    (FanConfiguration_IsSet_ResetAcpiMethod(a) == FanConfiguration_IsSet_ResetAcpiMethod(b)) &&
-    (FanConfiguration_IsSet_ReadLuaCode(a) == FanConfiguration_IsSet_ReadLuaCode(b)) &&
-    (FanConfiguration_IsSet_WriteLuaCode(a) == FanConfiguration_IsSet_WriteLuaCode(b)) &&
-    (FanConfiguration_IsSet_ResetLuaCode(a) == FanConfiguration_IsSet_ResetLuaCode(b));
+    (a->isset.ReadRegister == b->isset.ReadRegister) &&
+    (a->isset.WriteRegister == b->isset.WriteRegister) &&
+    (a->isset.ReadAcpiMethod == b->isset.ReadAcpiMethod) &&
+    (a->isset.WriteAcpiMethod == b->isset.WriteAcpiMethod) &&
+    (a->isset.ResetAcpiMethod == b->isset.ResetAcpiMethod) &&
+    (a->isset.ReadLuaCode == b->isset.ReadLuaCode) &&
+    (a->isset.WriteLuaCode == b->isset.WriteLuaCode) &&
+    (a->isset.ResetLuaCode == b->isset.ResetLuaCode);
 
   if (! same_fields)
     return false;
 
-  if (FanConfiguration_IsSet_ReadRegister(a))
+  if (a->isset.ReadRegister)
     if (a->ReadRegister != b->ReadRegister)
       return false;
 
-  if (FanConfiguration_IsSet_WriteRegister(a))
+  if (a->isset.WriteRegister)
     if (a->WriteRegister != b->WriteRegister)
       return false;
 
-  if (FanConfiguration_IsSet_ReadAcpiMethod(a))
+  if (a->isset.ReadAcpiMethod)
     if (! AcpiMethodCall_Equal(a->ReadAcpiMethod, b->ReadAcpiMethod))
       return false;
 
-  if (FanConfiguration_IsSet_WriteAcpiMethod(a))
+  if (a->isset.WriteAcpiMethod)
     if (! AcpiMethodCall_Equal(a->WriteAcpiMethod, b->WriteAcpiMethod))
       return false;
 
-  if (FanConfiguration_IsSet_ResetAcpiMethod(a))
+  if (a->isset.ResetAcpiMethod)
     if (! AcpiMethodCall_Equal(a->ResetAcpiMethod, b->ResetAcpiMethod))
       return false;
 
-  if (FanConfiguration_IsSet_ReadLuaCode(a))
+  if (a->isset.ReadLuaCode)
     if (strcmp(a->ReadLuaCode.source, b->ReadLuaCode.source))
       return false;
 
-  if (FanConfiguration_IsSet_WriteLuaCode(a))
+  if (a->isset.WriteLuaCode)
     if (strcmp(a->WriteLuaCode.source, b->WriteLuaCode.source))
       return false;
 
-  if (FanConfiguration_IsSet_ResetLuaCode(a))
+  if (a->isset.ResetLuaCode)
     if (strcmp(a->ResetLuaCode.source, b->ResetLuaCode.source))
       return false;
 
