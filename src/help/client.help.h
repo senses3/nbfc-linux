@@ -327,3 +327,18 @@
  "  -h, --help            Shows this message and exit\n"                       \
  "\n"                                                                          \
  ""
+
+#define CLIENT_RESET_EC_HELP_TEXT                                              \
+ "Usage: nbfc reset-ec [-h]\n"                                                 \
+ "\n"                                                                          \
+ "Resets the embedded controller registers to their configured reset values.\n"\
+ "\n"                                                                          \
+ "This command is intended for use after nbfc_service has been killed\n"       \
+ "unexpectedly, for example with SIGKILL, when the service has no opportunity\n"\
+ "to reset the EC registers during shutdown.\n"                                \
+ "\n"                                                                          \
+ "INTERNAL COMMAND ONLY\n"                                                     \
+ "\n"                                                                          \
+ "Optional arguments:\n"                                                       \
+ "  -h, --help            Shows this message and exit\n"                       \
+ ""

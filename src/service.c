@@ -17,6 +17,7 @@
 #include "buffer.h"
 #include "macros.h"
 #include "model_config.h"
+#include "register_write_configuration_utils.h"
 
 #include <stdio.h>  // snprintf
 #include <math.h>   // fabs
@@ -42,14 +43,8 @@ ServiceState                       Service_ServiceState = {0};
 array_of(FanTemperatureControl)    Service_Fans = {0};
 static enum Service_Initialization Service_State;
 
-static Error ApplyRegisterWriteConfigurations(bool);
-static Error ApplyRegisterWriteConfig(RegisterWriteConfiguration*);
-static Error ResetRegisterWriteConfigurations(void);
-static Error ResetRegisterWriteConfig(RegisterWriteConfiguration*);
 static void  ResetEC(void);
 static bool  IsAcpiCallUsed(void);
-static EmbeddedControllerType EmbeddedControllerType_By_EC(const EC_VTable*);
-static const EC_VTable* EC_By_EmbeddedControllerType(EmbeddedControllerType);
 
 Error Service_Init(void) {
   Error e;
@@ -177,7 +172,8 @@ Error Service_Init(void) {
 
   // Register Write configurations ============================================
   if (! options.read_only) {
-    e = ApplyRegisterWriteConfigurations(true);
+    e = RegisterWriteConfigurations_Apply(
+          &Service_ModelConfig.RegisterWriteConfigurations, true);
     if (e)
       goto error;
   }
@@ -218,7 +214,9 @@ Error Service_Loop(void) {
   }
 
   if (! options.read_only) {
-    e = ApplyRegisterWriteConfigurations(re_init_required);
+    e = RegisterWriteConfigurations_Apply(
+          &Service_ModelConfig.RegisterWriteConfigurations, re_init_required);
+
     if (e)
       goto error;
   }
@@ -240,56 +238,13 @@ error:
   return e;
 }
 
-static EmbeddedControllerType EmbeddedControllerType_By_EC(const EC_VTable* ec_vtable) {
-#if ENABLE_EC_SYS
-  if (ec_vtable == &EC_SysLinux_VTable)
-    return EmbeddedControllerType_ECSysLinux;
-#endif
-#if ENABLE_EC_ACPI
-  if (ec_vtable == &EC_SysLinux_ACPI_VTable)
-    return EmbeddedControllerType_ECSysLinuxACPI;
-#endif
-#if ENABLE_EC_DEV_PORT
-  if (ec_vtable == &EC_Linux_VTable)
-    return EmbeddedControllerType_ECLinux;
-#endif
-#if ENABLE_EC_DUMMY
-  if (ec_vtable == &EC_Dummy_VTable)
-    return EmbeddedControllerType_ECDummy;
-#endif
-  return EmbeddedControllerType_Unset;
-}
-
-static const EC_VTable* EC_By_EmbeddedControllerType(EmbeddedControllerType t) {
-  switch (t) {
-#if ENABLE_EC_SYS
-  case EmbeddedControllerType_ECSysLinux:
-    return &EC_SysLinux_VTable;
-#endif
-#if ENABLE_EC_ACPI
-  case EmbeddedControllerType_ECSysLinuxACPI:
-    return &EC_SysLinux_ACPI_VTable;
-#endif
-#if ENABLE_EC_DEV_PORT
-  case EmbeddedControllerType_ECLinux:
-    return &EC_Linux_VTable;
-#endif
-#if ENABLE_EC_DUMMY
-  case EmbeddedControllerType_ECDummy:
-    return &EC_Dummy_VTable;
-#endif
-  default:
-    return NULL;
-  }
-}
-
 static void ResetEC(void) {
   Error e;
   bool failed = false;
   int tries = 10;
 
   do {
-    e = ResetRegisterWriteConfigurations();
+    e = RegisterWriteConfigurations_Reset(&Service_ModelConfig.RegisterWriteConfigurations);
     e_warn();
     if (e)
       failed = true;
@@ -301,102 +256,6 @@ static void ResetEC(void) {
         failed = true;
     }
   } while (failed && --tries);
-}
-
-static Error ResetRegisterWriteConfig(RegisterWriteConfiguration* cfg) {
-  Error e;
-  uint8_t mask;
-  uint64_t out;
-
-  switch (cfg->ResetWriteMode) {
-    case RegisterWriteMode_Set:
-      return ec->WriteByte(cfg->Register, cfg->ResetValue);
-
-    case RegisterWriteMode_And:
-      e = ec->ReadByte(cfg->Register, &mask);
-      e_check();
-      return ec->WriteByte(cfg->Register, cfg->ResetValue & mask);
-
-    case RegisterWriteMode_Or:
-      e = ec->ReadByte(cfg->Register, &mask);
-      e_check();
-      return ec->WriteByte(cfg->Register, cfg->ResetValue | mask);
-
-    case RegisterWriteMode_Call:
-      e = AcpiCall_Call(cfg->ResetAcpiMethod, 0, &out);
-      if (e)
-        return err_chain_string(e, "ResetAcpiMethod");
-      else
-        return err_success();
-
-    case RegisterWriteMode_Lua:
-      e = Lua_Call(cfg->ResetLuaCode.function, 0, &out);
-      if (e)
-        return err_chain_string(e, "ResetLuaCode");
-      else
-        return err_success();
-
-    default:
-      return err_string("ERR-01");
-  }
-}
-
-static Error ResetRegisterWriteConfigurations(void) {
-  Error e = err_success();
-  for_each_array(RegisterWriteConfiguration*, cfg, Service_ModelConfig.RegisterWriteConfigurations)
-    if (cfg->ResetRequired) {
-      e = ResetRegisterWriteConfig(cfg);
-      e_warn();
-    }
-  return e;
-}
-
-static Error ApplyRegisterWriteConfig(RegisterWriteConfiguration* cfg) {
-  Error e;
-  uint8_t mask;
-  uint64_t out;
-
-  switch (cfg->WriteMode) {
-    case RegisterWriteMode_Set:
-      return ec->WriteByte(cfg->Register, cfg->Value);
-
-    case RegisterWriteMode_And:
-      e = ec->ReadByte(cfg->Register, &mask);
-      e_check();
-      return ec->WriteByte(cfg->Register, cfg->Value & mask);
-
-    case RegisterWriteMode_Or:
-      e = ec->ReadByte(cfg->Register, &mask);
-      e_check();
-      return ec->WriteByte(cfg->Register, cfg->Value | mask);
-
-    case RegisterWriteMode_Call:
-      e = AcpiCall_Call(cfg->AcpiMethod, 0, &out);
-      if (e)
-        return err_chain_string(e, "AcpiMethod");
-      else
-        return err_success();
-
-    case RegisterWriteMode_Lua:
-      e = Lua_Call(cfg->LuaCode.function, 0, &out);
-      if (e)
-        return err_chain_string(e, "LuaCode");
-      else
-        return err_success();
-
-    default:
-      return err_string("ERR-02");
-  }
-}
-
-static Error ApplyRegisterWriteConfigurations(bool initializing) {
-  for_each_array(RegisterWriteConfiguration*, cfg, Service_ModelConfig.RegisterWriteConfigurations) {
-    if (initializing || cfg->WriteOccasion == RegisterWriteOccasion_OnWriteFanSpeed) {
-       Error e = ApplyRegisterWriteConfig(cfg);
-       e_check();
-    }
-  }
-  return err_success();
 }
 
 static bool IsAcpiCallUsed(void) {

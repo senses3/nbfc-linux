@@ -50,6 +50,10 @@
 #include "ec_sys_linux.c"      // src
 #endif
 
+#if ENABLE_EC_DUMMY
+#include "ec_dummy.c"          // src
+#endif
+
 #include "acpi_call.c"         // src
 #include "buffer.c"            // src
 #include "log.c"               // src

@@ -24,7 +24,11 @@
 #include "log.c"
 #include "lua_bindings.c"
 #include "error.c"
-#include "ec.h"
+#include "ec.c"
+#include "ec_linux.c"
+#include "ec_sys_linux.c"
+#include "ec_dummy.c"
+#include "fan.c"
 #include "file_utils.c"
 #include "model_config.c"
 #include "fs_sensors.c"
@@ -50,7 +54,9 @@
 #include "config_rating_rules.c"
 #include "model_config_utils.c"
 #include "model_config_to_json.c"
+#include "register_write_configuration_utils.c"
 #include "str_functions.c"
+#include "temperature_threshold_manager.c"
 #include "xml2json.c"
 #include "client/dmi.c"
 #include "client/curl_utils.c"
@@ -82,6 +88,7 @@ const struct cli99_Option Main_CommandLine[] = {
 #include "client/cmd_support.c"
 #include "client/cmd_acpi_dump.c"
 #include "client/cmd_rate_config.c"
+#include "client/cmd_reset_ec.c"
 #include "client/cmd_xml2json.c"
 
 #define NBFC_CLIENT_COMMANDS \
@@ -105,7 +112,8 @@ const struct cli99_Option Main_CommandLine[] = {
   o("donate",           Donate,           SUPPORT,          Main)          \
   o("support",          Support,          SUPPORT,          Support)       \
   o("help",             Help,             HELP,             Main)          \
-  o("faq",              FAQ,              FAQ,              Main)
+  o("faq",              FAQ,              FAQ,              Main)          \
+  o("reset-ec",         ResetEc,          RESET_EC,         Main)
 //  COMMAND             ENUM              HELP TEXT         COMMANDLINE
 
 enum Command {
@@ -556,6 +564,7 @@ int main(int argc, char* const argv[]) {
   case Command_Support:           return Support();
   case Command_Xml2Json:          return Xml2Json();
   case Command_FAQ:               return FAQ();
+  case Command_ResetEc:           return ResetEc();
   default:                        return NBFC_EXIT_FAILURE;
   }
 }

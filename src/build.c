@@ -46,6 +46,7 @@
 #include "protocol.c"
 #include "pidfile.c"
 #include "nxjson_write.c"
+#include "register_write_configuration_utils.c"
 #include "service.c"
 #include "service_config.c"
 #include "service_state.c"
